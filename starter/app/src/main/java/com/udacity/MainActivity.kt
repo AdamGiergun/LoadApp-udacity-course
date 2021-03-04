@@ -19,6 +19,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pendingIntent: PendingIntent
     private lateinit var action: NotificationCompat.Action
 
+    private var downloadChosen = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ActivityMainBinding.inflate(layoutInflater).run {
@@ -30,9 +32,15 @@ class MainActivity : AppCompatActivity() {
                 IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
             )
 
-            contentMain.customButton.setOnClickListener {
-                showInfo()
-                //viewModel.download()
+            contentMain.customButton.setOnClickListener { showInfo() }
+
+            contentMain.downloadChooser.setOnCheckedChangeListener { _, checkedId ->
+                if (!downloadChosen) {
+                    downloadChosen = true
+                    contentMain.customButton.setOnClickListener { viewModel.download() }
+                }
+                contentMain.customButton.setState(ButtonState.Active)
+                viewModel.setDownloadUri(checkedId)
             }
         }
     }

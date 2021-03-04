@@ -30,7 +30,7 @@ class LoadingButton @JvmOverloads constructor(
         invalidate()
     }
 
-    fun changeState(newButtonState: ButtonState) {
+    fun setState(newButtonState: ButtonState) {
         buttonState = newButtonState
     }
 
@@ -40,6 +40,7 @@ class LoadingButton @JvmOverloads constructor(
         canvas?.let {
             when (buttonState) {
                 ButtonState.NotActive -> drawNotActiveButton(it)
+                ButtonState.Active -> drawActiveButton(it)
                 else -> {}
             }
         }
@@ -50,7 +51,6 @@ class LoadingButton @JvmOverloads constructor(
         rectPaint.apply {
             color = Color.LTGRAY
             isAntiAlias = true
-
         }
         canvas.drawRect(rect, rectPaint)
 
@@ -62,6 +62,28 @@ class LoadingButton @JvmOverloads constructor(
         val textOffset = (textPaint.descent() + textPaint.ascent()) / 2
         canvas.drawText(
             context.getString(R.string.choose_download),
+            (widthSize / 2).toFloat(),
+            ((heightSize / 2) - textOffset),
+            textPaint
+        )
+    }
+
+    private fun drawActiveButton(canvas: Canvas) {
+        rect.set(0, 0, widthSize, heightSize)
+        rectPaint.apply {
+            color = context.getColor(R.color.colorPrimary)
+            isAntiAlias = true
+        }
+        canvas.drawRect(rect, rectPaint)
+
+        textPaint.apply {
+            color = Color.WHITE
+            textSize = defaultTextSize
+            textAlign = Paint.Align.CENTER
+        }
+        val textOffset = (textPaint.descent() + textPaint.ascent()) / 2
+        canvas.drawText(
+            context.getString(R.string.download),
             (widthSize / 2).toFloat(),
             ((heightSize / 2) - textOffset),
             textPaint

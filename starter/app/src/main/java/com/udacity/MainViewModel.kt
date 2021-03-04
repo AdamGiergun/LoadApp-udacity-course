@@ -17,12 +17,23 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+    private lateinit var uri: Uri
+
+    fun setDownloadUri(id: Int) {
+        uri = Uri.parse(when (id) {
+            R.id.glide_radio -> "https://github.com/bumptech/glide/archive/master.zip"
+            R.id.loadapp_radio -> "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
+            R.id.retrofit_radio -> "https://github.com/square/retrofit/archive/master.zip"
+            else -> ""
+        })
+    }
+
     private val app = getApplication<Application>()
     private var downloadID: Long = 0
 
     fun download() {
         val request =
-            DownloadManager.Request(Uri.parse(URL))
+            DownloadManager.Request(uri)
                 .setTitle(app.getString(R.string.app_name))
                 .setDescription(app.getString(R.string.app_description))
                 .setRequiresCharging(false)
@@ -32,10 +43,5 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         val downloadManager = app.getSystemService(AppCompatActivity.DOWNLOAD_SERVICE) as DownloadManager
         downloadID =
             downloadManager.enqueue(request)// enqueue puts the download request in the queue.
-    }
-
-    companion object {
-        private const val URL =
-            "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
     }
 }
