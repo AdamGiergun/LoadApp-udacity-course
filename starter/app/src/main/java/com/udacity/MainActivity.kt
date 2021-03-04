@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
@@ -24,12 +25,20 @@ class MainActivity : AppCompatActivity() {
             setContentView(root)
             setSupportActionBar(toolbar)
 
-            registerReceiver(viewModel.receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+            registerReceiver(
+                viewModel.receiver,
+                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+            )
 
             contentMain.customButton.setOnClickListener {
-                viewModel.download()
+                showInfo()
+                //viewModel.download()
             }
         }
+    }
+
+    private fun showInfo() {
+        Toast.makeText(this, "Please, choose what to download first", Toast.LENGTH_SHORT).show()
     }
 
     companion object {

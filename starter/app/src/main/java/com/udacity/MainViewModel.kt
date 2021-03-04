@@ -9,7 +9,6 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.AndroidViewModel
 
-
 class MainViewModel(application: Application): AndroidViewModel(application) {
 
     val receiver = object : BroadcastReceiver() {
