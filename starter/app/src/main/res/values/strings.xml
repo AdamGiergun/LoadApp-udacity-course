@@ -11,9 +11,10 @@
     <string name="button_name">Click me</string>
     <string name="button_loading">We are loading </string>
     <string name="title_activity_detail">DetailActivity</string>
-    <string name="glide_library">Glide - Image Loading Library by\u00A0BumpTech</string>
-    <string name="loadapp_repository">LoadApp - Current repository by\u00A0Udacity</string>
-    <string name="retrofit_client">Retrofit - Type-safe HTTP client for\u00A0Android and\u00A0Java by\u00A0Square,\u00A0Inc</string>
+    <string name="glide_library">Glide\t\t\t\t\t- Image Loading Library by\u00A0BumpTech</string>
+    <string name="loadapp_repository">LoadApp\t\t- Current repository by\u00A0Udacity</string>
+    <string name="retrofit_client">Retrofit\t\t\t- Type-safe HTTP client for\u00A0Android and\u00A0Java by\u00A0Square,\u00A0Inc</string>
     <string name="choose_download">Choose download first</string>
     <string name="download">Download</string>
+    <string name="download_picture">Download picture</string>
 </resources>
