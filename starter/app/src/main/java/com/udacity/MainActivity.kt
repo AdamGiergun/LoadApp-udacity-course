@@ -53,10 +53,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
-
     private fun showInfo() {
         Toast.makeText(this, "Please, choose what to download first", Toast.LENGTH_SHORT).show()
     }

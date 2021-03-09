@@ -56,7 +56,7 @@ class LoadingButton @JvmOverloads constructor(
         isFocusable = true
 
         val outValue = TypedValue()
-        context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
+        context.theme.resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, outValue, true)
         foreground = ResourcesCompat.getDrawable(resources, outValue.resourceId, context.theme)
     }
 
