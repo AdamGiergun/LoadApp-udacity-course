@@ -4,12 +4,13 @@ import android.animation.ValueAnimator
 import android.animation.ValueAnimator.INFINITE
 import android.content.Context
 import android.graphics.*
+import android.os.Build
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import kotlin.properties.Delegates
-
 
 class LoadingButton @JvmOverloads constructor(
     context: Context,
@@ -35,7 +36,7 @@ class LoadingButton @JvmOverloads constructor(
 
     private val animatedPath = Path()
     private val animatedPaint = Paint().apply {
-        color = context.getColor(R.color.colorPrimaryDark)
+        color = ContextCompat.getColor(context, R.color.colorPrimaryDark)
         isAntiAlias = true
     }
     private val valueAnimator = ValueAnimator()
@@ -55,9 +56,15 @@ class LoadingButton @JvmOverloads constructor(
         isClickable = true
         isFocusable = true
 
-        val outValue = TypedValue()
-        context.theme.resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, outValue, true)
-        foreground = ResourcesCompat.getDrawable(resources, outValue.resourceId, context.theme)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val outValue = TypedValue()
+            context.theme.resolveAttribute(
+                android.R.attr.selectableItemBackgroundBorderless,
+                outValue,
+                true
+            )
+            foreground = ResourcesCompat.getDrawable(resources, outValue.resourceId, context.theme)
+        }
     }
 
     fun setState(newButtonState: ButtonState) {
@@ -104,7 +111,7 @@ class LoadingButton @JvmOverloads constructor(
             reset()
             addRect(rect, Path.Direction.CW)
         }
-        rectPaint.color = context.getColor(R.color.colorPrimary)
+        rectPaint.color = ContextCompat.getColor(context, R.color.colorPrimary)
 
         textPaint.apply {
             color = Color.WHITE
