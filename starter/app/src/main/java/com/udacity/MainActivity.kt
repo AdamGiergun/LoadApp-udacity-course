@@ -15,6 +15,7 @@ class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 
+    private lateinit var binding: ActivityMainBinding
     private lateinit var notificationManager: NotificationManager
     private lateinit var pendingIntent: PendingIntent
     private lateinit var action: NotificationCompat.Action
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ActivityMainBinding.inflate(layoutInflater).run {
+            binding = this
             setContentView(root)
             setSupportActionBar(toolbar)
 
@@ -32,17 +34,27 @@ class MainActivity : AppCompatActivity() {
                 IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
             )
 
-            contentMain.customButton.setOnClickListener { showInfo() }
+            contentMain.customButton.apply {
+                setState(ButtonState.Inactive)
+                setOnClickListener { showInfo() }
+            }
 
             contentMain.downloadChooser.setOnCheckedChangeListener { _, checkedId ->
                 if (!downloadChosen) {
                     downloadChosen = true
-                    contentMain.customButton.setOnClickListener { viewModel.download() }
+                    contentMain.customButton.setOnClickListener {
+                        (it as LoadingButton).setState(ButtonState.Loading)
+                        viewModel.download()
+                    }
                 }
                 contentMain.customButton.setState(ButtonState.Active)
                 viewModel.setDownloadUri(checkedId)
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
     }
 
     private fun showInfo() {

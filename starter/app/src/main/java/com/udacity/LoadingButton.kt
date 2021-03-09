@@ -1,11 +1,9 @@
 package com.udacity
 
 import android.animation.ValueAnimator
+import android.animation.ValueAnimator.INFINITE
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Rect
+import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import kotlin.properties.Delegates
@@ -14,76 +12,106 @@ class LoadingButton @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : View(context, attrs, defStyleAttr) {
+) : View(context, attrs, defStyleAttr),
+    ValueAnimator.AnimatorUpdateListener {
+
     private var widthSize = 0
     private var heightSize = 0
     private val defaultTextSize = resources.getDimension(R.dimen.default_text_size)
+    private lateinit var buttonText: String
 
+    private val rect = RectF()
+    private val rectPaint = Paint().apply {
+        isAntiAlias = true
+    }
+    private val rectPath = Path()
 
-    private val rect = Rect()
-    private val rectPaint = Paint()
-    private val textPaint = Paint()
+    private val textPaint = Paint().apply {
+        textSize = defaultTextSize
+    }
 
+    private val animatedPath = Path()
+    private val animatedPaint = Paint().apply {
+        color = context.getColor(R.color.colorPrimaryDark)
+        isAntiAlias = true
+    }
     private val valueAnimator = ValueAnimator()
 
-    private var buttonState by Delegates.observable<ButtonState>(ButtonState.NotActive) { p, old, new ->
-        invalidate()
+    private var buttonState by Delegates.observable<ButtonState>(ButtonState.Inactive) { _, _, new ->
+        if (new != ButtonState.Inactive) {
+            refresh()
+            invalidate()
+        }
     }
 
     fun setState(newButtonState: ButtonState) {
         buttonState = newButtonState
     }
 
-
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        canvas?.let {
-            when (buttonState) {
-                ButtonState.NotActive -> drawNotActiveButton(it)
-                ButtonState.Active -> drawActiveButton(it)
-                else -> {}
+        canvas?.run {
+            drawPath(rectPath, rectPaint)
+            if (buttonState == ButtonState.Loading) drawPath(animatedPath, animatedPaint)
+            myDrawText()
+        }
+    }
+
+    private fun refreshInactiveButton() {
+        rect.set(0f, 0f, widthSize.toFloat(), heightSize.toFloat())
+        rectPath.apply {
+            reset()
+            addRect(rect, Path.Direction.CW)
+        }
+        rectPaint.color = Color.LTGRAY
+
+        textPaint.apply {
+            color = Color.BLACK
+            textAlign = Paint.Align.CENTER
+        }
+        buttonText = context.getString(R.string.choose_download)
+    }
+
+    private fun refresh() {
+        when (buttonState) {
+            ButtonState.Inactive -> refreshInactiveButton()
+            ButtonState.Active -> refreshActiveButton()
+            ButtonState.Loading -> refreshLoadingButton()
+            else -> {
             }
         }
     }
 
-    private fun drawNotActiveButton(canvas: Canvas) {
-        rect.set(0, 0, widthSize, heightSize)
-        rectPaint.apply {
-            color = Color.LTGRAY
-            isAntiAlias = true
+    private fun refreshActiveButton() {
+        rect.set(0f, 0f, widthSize.toFloat(), heightSize.toFloat())
+        rectPath.apply {
+            reset()
+            addRect(rect, Path.Direction.CW)
         }
-        canvas.drawRect(rect, rectPaint)
-
-        textPaint.apply {
-            color = Color.BLACK
-            textSize = defaultTextSize
-            textAlign = Paint.Align.CENTER
-        }
-        val textOffset = (textPaint.descent() + textPaint.ascent()) / 2
-        canvas.drawText(
-            context.getString(R.string.choose_download),
-            (widthSize / 2).toFloat(),
-            ((heightSize / 2) - textOffset),
-            textPaint
-        )
-    }
-
-    private fun drawActiveButton(canvas: Canvas) {
-        rect.set(0, 0, widthSize, heightSize)
-        rectPaint.apply {
-            color = context.getColor(R.color.colorPrimary)
-            isAntiAlias = true
-        }
-        canvas.drawRect(rect, rectPaint)
+        rectPaint.color = context.getColor(R.color.colorPrimary)
 
         textPaint.apply {
             color = Color.WHITE
-            textSize = defaultTextSize
             textAlign = Paint.Align.CENTER
         }
+        buttonText = context.getString(R.string.download)
+    }
+
+    private fun refreshLoadingButton() {
+        valueAnimator.apply {
+            setFloatValues(0f, 1000f)
+            duration = 1500
+            addUpdateListener(this@LoadingButton)
+            start()
+            repeatCount = INFINITE
+        }
+        buttonText = context.getString(R.string.loading)
+    }
+
+    private fun Canvas.myDrawText() {
         val textOffset = (textPaint.descent() + textPaint.ascent()) / 2
-        canvas.drawText(
-            context.getString(R.string.download),
+        drawText(
+            buttonText,
             (widthSize / 2).toFloat(),
             ((heightSize / 2) - textOffset),
             textPaint
@@ -91,8 +119,8 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val minw: Int = paddingLeft + paddingRight + suggestedMinimumWidth
-        val w: Int = resolveSizeAndState(minw, widthMeasureSpec, 1)
+        val minW: Int = paddingLeft + paddingRight + suggestedMinimumWidth
+        val w: Int = resolveSizeAndState(minW, widthMeasureSpec, 1)
         val h: Int = resolveSizeAndState(
             MeasureSpec.getSize(w),
             heightMeasureSpec,
@@ -101,5 +129,17 @@ class LoadingButton @JvmOverloads constructor(
         widthSize = w
         heightSize = h
         setMeasuredDimension(w, h)
+        refresh()
+    }
+
+    override fun onAnimationUpdate(animation: ValueAnimator?) {
+        animation?.let {
+            val value = (it.animatedValue as Float)
+            animatedPath.apply {
+                reset()
+                addRect(0f, 0f, value, heightSize.toFloat(), Path.Direction.CW)
+                invalidate()
+            }
+        }
     }
 }
