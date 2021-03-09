@@ -6,8 +6,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Build
+import android.os.Environment
+import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
+import java.io.File
 
 class MainViewModel(application: Application): AndroidViewModel(application) {
 
@@ -32,16 +36,27 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
     private var downloadID: Long = 0
 
     fun download() {
-        val request =
-            DownloadManager.Request(uri)
-                .setTitle(app.getString(R.string.app_name))
-                .setDescription(app.getString(R.string.app_description))
-                .setRequiresCharging(false)
-                .setAllowedOverMetered(true)
-                .setAllowedOverRoaming(true)
+        val fileName = uri.pathSegments[uri.pathSegments.size - 3]
+        val downloadDir = ContextCompat.getExternalFilesDirs(app, Environment.DIRECTORY_DOWNLOADS)[0]
 
-        val downloadManager = app.getSystemService(AppCompatActivity.DOWNLOAD_SERVICE) as DownloadManager
+        val file = File("${downloadDir.path}/$fileName")
+        Log.d("PATH", file.canonicalPath)
+
+        val request =
+            DownloadManager.Request(uri).apply {
+                setDestinationUri(Uri.fromFile(file))
+                setTitle(fileName)
+                setDescription(app.getString(R.string.app_description))
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    setRequiresCharging(false)
+                }
+                setAllowedOverMetered(true)
+                setAllowedOverRoaming(true)
+            }
+
+        val downloadManager = ContextCompat.getSystemService(app, DownloadManager::class.java)
+            //app.getSystemService(AppCompatActivity.DOWNLOAD_SERVICE) as DownloadManager
         downloadID =
-            downloadManager.enqueue(request)// enqueue puts the download request in the queue.
+            downloadManager?.enqueue(request) ?: -1 // enqueue puts the download request in the queue.
     }
 }
