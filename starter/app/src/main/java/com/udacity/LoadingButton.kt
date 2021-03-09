@@ -5,8 +5,11 @@ import android.animation.ValueAnimator.INFINITE
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.View
+import androidx.core.content.res.ResourcesCompat
 import kotlin.properties.Delegates
+
 
 class LoadingButton @JvmOverloads constructor(
     context: Context,
@@ -42,6 +45,19 @@ class LoadingButton @JvmOverloads constructor(
             refresh()
             invalidate()
         }
+    }
+
+    init {
+        addRippleEffectOnClick()
+    }
+
+    private fun addRippleEffectOnClick() {
+        isClickable = true
+        isFocusable = true
+
+        val outValue = TypedValue()
+        context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
+        foreground = ResourcesCompat.getDrawable(resources, outValue.resourceId, context.theme)
     }
 
     fun setState(newButtonState: ButtonState) {
