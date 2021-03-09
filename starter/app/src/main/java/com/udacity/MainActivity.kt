@@ -50,6 +50,10 @@ class MainActivity : AppCompatActivity() {
                 contentMain.customButton.setState(ButtonState.Active)
                 viewModel.setDownloadUri(checkedId)
             }
+
+            viewModel.downloadCompleted.observe(this@MainActivity) {
+                if (it) contentMain.customButton.setState(ButtonState.Active)
+            }
         }
     }
 

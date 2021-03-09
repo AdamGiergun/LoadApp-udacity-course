@@ -11,13 +11,20 @@ import android.os.Environment
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import java.io.File
 
 class MainViewModel(application: Application): AndroidViewModel(application) {
 
+    private val _downloadCompleted = MutableLiveData<Boolean>()
+    val downloadCompleted: LiveData<Boolean>
+        get() = _downloadCompleted
+
     val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+            if (id == downloadID) _downloadCompleted.value = true
         }
     }
 
