@@ -42,7 +42,7 @@ class LoadingButton @JvmOverloads constructor(
         color = ContextCompat.getColor(context, R.color.colorPrimaryDark)
         isAntiAlias = true
     }
-    private val barAnimator = ValueAnimator()
+    private val barAnimator = valueAnimator
 
     private val circlePath = Path()
     private val circleRect = RectF()
@@ -53,7 +53,7 @@ class LoadingButton @JvmOverloads constructor(
     }
     private var circlePositionX = 0f
     private var radius = 0f
-    private val circleAnimator = ValueAnimator()
+    private val circleAnimator = valueAnimator.apply { setFloatValues(0f, 360f) }
 
     private var buttonState by Delegates.observable<ButtonState>(ButtonState.Inactive) { _, _, new ->
         if (new != ButtonState.Inactive) {
@@ -61,6 +61,13 @@ class LoadingButton @JvmOverloads constructor(
             invalidate()
         }
     }
+
+    private val valueAnimator
+        get() = ValueAnimator().apply {
+            duration = DURATION
+            repeatCount = INFINITE
+            addUpdateListener(this@LoadingButton)
+        }
 
     init {
         addRippleEffectOnClick()
@@ -92,15 +99,19 @@ class LoadingButton @JvmOverloads constructor(
             if (buttonState == ButtonState.Loading) {
                 drawPath(animatedPath, animatedPaint)
                 drawPath(circlePath, circlePaint)
-                myDrawText(-radius - SPACE/2)
+                myDrawText(-radius - SPACE / 2)
             } else {
                 myDrawText(0f)
             }
-
         }
     }
 
     private fun refreshButton() {
+        rect.set(0f, 0f, widthSize.toFloat(), heightSize.toFloat())
+        rectPath.apply {
+            reset()
+            addRect(rect, Path.Direction.CW)
+        }
         when (buttonState) {
             ButtonState.Inactive -> refreshInactiveButton()
             ButtonState.Active -> refreshActiveButton()
@@ -111,13 +122,7 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun refreshInactiveButton() {
-        rect.set(0f, 0f, widthSize.toFloat(), heightSize.toFloat())
-        rectPath.apply {
-            reset()
-            addRect(rect, Path.Direction.CW)
-        }
         rectPaint.color = Color.LTGRAY
-
         textPaint.apply {
             color = Color.BLACK
             textAlign = Paint.Align.CENTER
@@ -126,13 +131,7 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun refreshActiveButton() {
-        rect.set(0f, 0f, widthSize.toFloat(), heightSize.toFloat())
-        rectPath.apply {
-            reset()
-            addRect(rect, Path.Direction.CW)
-        }
         rectPaint.color = ContextCompat.getColor(context, R.color.colorPrimary)
-
         textPaint.apply {
             color = Color.WHITE
             textAlign = Paint.Align.CENTER
@@ -141,32 +140,28 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun refreshLoadingButton() {
-        barAnimator.apply {
-            setFloatValues(0f, 1000f)
-            duration = DURATION
-            addUpdateListener(this@LoadingButton)
-            repeatCount = INFINITE
-            start()
-        }
-        circleAnimator.apply {
-            setFloatValues(0f, 360f)
-            // sets the duration of our animation
-            duration = DURATION
-            repeatCount = INFINITE
-            // registers our AnimatorUpdateListener
-            addUpdateListener(this@LoadingButton)
-            start()
+        rectPaint.color = ContextCompat.getColor(context, R.color.colorPrimary)
+        textPaint.apply {
+            color = Color.WHITE
+            textAlign = Paint.Align.CENTER
         }
         buttonText = context.getString(R.string.loading)
+
         val buttonTextWidth = textPaint.measureText(buttonText)
         circlePositionX = (widthSize + buttonTextWidth + SPACE) / 2 - radius
+
+        barAnimator.run {
+            setFloatValues(0f, widthSize.toFloat())
+            start()
+        }
+        circleAnimator.start()
     }
 
-    private fun Canvas.myDrawText(shift: Float) {
+    private fun Canvas.myDrawText(textShift: Float) {
         val textOffset = (textPaint.descent() + textPaint.ascent()) / 2
         drawText(
             buttonText,
-            (widthSize / 2).toFloat() + shift,
+            (widthSize / 2).toFloat() + textShift,
             ((heightSize / 2) - textOffset),
             textPaint
         )
@@ -182,7 +177,7 @@ class LoadingButton @JvmOverloads constructor(
         )
         widthSize = w
         heightSize = h
-        radius = (heightSize/4).toFloat()
+        radius = (heightSize / 4).toFloat()
         setMeasuredDimension(w, h)
         refreshButton()
     }
@@ -196,8 +191,7 @@ class LoadingButton @JvmOverloads constructor(
                     addRect(0f, 0f, value, heightSize.toFloat(), Path.Direction.CW)
                     invalidate()
                 }
-            }
-             else {
+            } else {
                 val value = it.animatedValue as Float
                 circleRect.set(circlePositionX, radius, circlePositionX + 2 * radius, 3 * radius)
                 circlePath.apply {
