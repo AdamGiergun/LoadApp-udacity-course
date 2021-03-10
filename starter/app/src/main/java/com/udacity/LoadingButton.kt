@@ -12,6 +12,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import kotlin.properties.Delegates
 
+private const val SPACE = 50f
+private const val DURATION = 2000L
+
 class LoadingButton @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -39,11 +42,22 @@ class LoadingButton @JvmOverloads constructor(
         color = ContextCompat.getColor(context, R.color.colorPrimaryDark)
         isAntiAlias = true
     }
-    private val valueAnimator = ValueAnimator()
+    private val barAnimator = ValueAnimator()
+
+    private val circlePath = Path()
+    private val circleRect = RectF()
+    private val circlePaint = Paint().apply {
+        style = Paint.Style.FILL
+        color = Color.MAGENTA
+        isAntiAlias = true
+    }
+    private var circlePositionX = 0f
+    private var radius = 0f
+    private val circleAnimator = ValueAnimator()
 
     private var buttonState by Delegates.observable<ButtonState>(ButtonState.Inactive) { _, _, new ->
         if (new != ButtonState.Inactive) {
-            refresh()
+            refreshButton()
             invalidate()
         }
     }
@@ -75,8 +89,24 @@ class LoadingButton @JvmOverloads constructor(
         super.onDraw(canvas)
         canvas?.run {
             drawPath(rectPath, rectPaint)
-            if (buttonState == ButtonState.Loading) drawPath(animatedPath, animatedPaint)
-            myDrawText()
+            if (buttonState == ButtonState.Loading) {
+                drawPath(animatedPath, animatedPaint)
+                drawPath(circlePath, circlePaint)
+                myDrawText(-radius - SPACE/2)
+            } else {
+                myDrawText(0f)
+            }
+
+        }
+    }
+
+    private fun refreshButton() {
+        when (buttonState) {
+            ButtonState.Inactive -> refreshInactiveButton()
+            ButtonState.Active -> refreshActiveButton()
+            ButtonState.Loading -> refreshLoadingButton()
+            else -> {
+            }
         }
     }
 
@@ -95,16 +125,6 @@ class LoadingButton @JvmOverloads constructor(
         buttonText = context.getString(R.string.choose_download)
     }
 
-    private fun refresh() {
-        when (buttonState) {
-            ButtonState.Inactive -> refreshInactiveButton()
-            ButtonState.Active -> refreshActiveButton()
-            ButtonState.Loading -> refreshLoadingButton()
-            else -> {
-            }
-        }
-    }
-
     private fun refreshActiveButton() {
         rect.set(0f, 0f, widthSize.toFloat(), heightSize.toFloat())
         rectPath.apply {
@@ -121,21 +141,32 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun refreshLoadingButton() {
-        valueAnimator.apply {
+        barAnimator.apply {
             setFloatValues(0f, 1000f)
-            duration = 1500
+            duration = DURATION
+            addUpdateListener(this@LoadingButton)
+            repeatCount = INFINITE
+            start()
+        }
+        circleAnimator.apply {
+            setFloatValues(0f, 360f)
+            // sets the duration of our animation
+            duration = DURATION
+            repeatCount = INFINITE
+            // registers our AnimatorUpdateListener
             addUpdateListener(this@LoadingButton)
             start()
-            repeatCount = INFINITE
         }
         buttonText = context.getString(R.string.loading)
+        val buttonTextWidth = textPaint.measureText(buttonText)
+        circlePositionX = (widthSize + buttonTextWidth + SPACE) / 2 - radius
     }
 
-    private fun Canvas.myDrawText() {
+    private fun Canvas.myDrawText(shift: Float) {
         val textOffset = (textPaint.descent() + textPaint.ascent()) / 2
         drawText(
             buttonText,
-            (widthSize / 2).toFloat(),
+            (widthSize / 2).toFloat() + shift,
             ((heightSize / 2) - textOffset),
             textPaint
         )
@@ -151,17 +182,31 @@ class LoadingButton @JvmOverloads constructor(
         )
         widthSize = w
         heightSize = h
+        radius = (heightSize/4).toFloat()
         setMeasuredDimension(w, h)
-        refresh()
+        refreshButton()
     }
 
     override fun onAnimationUpdate(animation: ValueAnimator?) {
         animation?.let {
-            val value = (it.animatedValue as Float)
-            animatedPath.apply {
-                reset()
-                addRect(0f, 0f, value, heightSize.toFloat(), Path.Direction.CW)
-                invalidate()
+            if (animation == barAnimator) {
+                val value = it.animatedValue as Float
+                animatedPath.apply {
+                    reset()
+                    addRect(0f, 0f, value, heightSize.toFloat(), Path.Direction.CW)
+                    invalidate()
+                }
+            }
+             else {
+                val value = it.animatedValue as Float
+                circleRect.set(circlePositionX, radius, circlePositionX + 2 * radius, 3 * radius)
+                circlePath.apply {
+                    reset()
+                    arcTo(circleRect, -180f, value)
+                    lineTo(circlePositionX + radius, 2 * radius)
+                    lineTo(circlePositionX, 2 * radius)
+                    invalidate()
+                }
             }
         }
     }
