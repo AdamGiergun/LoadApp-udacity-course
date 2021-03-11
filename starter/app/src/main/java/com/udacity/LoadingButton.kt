@@ -28,31 +28,30 @@ class LoadingButton @JvmOverloads constructor(
     private lateinit var buttonText: String
 
     private val rect = RectF()
-    private val rectPaint = Paint().apply {
-        isAntiAlias = true
-    }
-    private val rectPath = Path()
+
+    private val baseContent = ViewContent()
 
     private val textPaint = Paint().apply {
         textSize = defaultTextSize
     }
 
-    private val animatedPath = Path()
-    private val animatedPaint = Paint().apply {
-        color = ContextCompat.getColor(context, R.color.colorPrimaryDark)
-        isAntiAlias = true
-    }
-    private val barAnimator = valueAnimator
+    private val progressBar =
+        ViewContent(true, this).apply {
+            setColor(context, R.color.colorPrimaryDark)
+        }
 
-    private val circlePath = Path()
-    private val circlePaint = Paint().apply {
-        style = Paint.Style.FILL
-        color = Color.MAGENTA
-        isAntiAlias = true
-    }
+    private val progressCircle =
+        ViewContent(true, this).apply {
+            paint.apply {
+                style = Paint.Style.FILL
+                color = Color.MAGENTA
+                isAntiAlias = true
+            }
+            animator.apply { setFloatValues(0f, 360f) }
+        }
+
     private var circlePositionX = 0f
     private var radius = 0f
-    private val circleAnimator = valueAnimator.apply { setFloatValues(0f, 360f) }
 
     private var buttonState by Delegates.observable<ButtonState>(ButtonState.Inactive) { _, _, new ->
         if (new != ButtonState.Inactive) {
@@ -60,13 +59,6 @@ class LoadingButton @JvmOverloads constructor(
             invalidate()
         }
     }
-
-    private val valueAnimator
-        get() = ValueAnimator().apply {
-            duration = DURATION
-            repeatCount = INFINITE
-            addUpdateListener(this@LoadingButton)
-        }
 
     init {
         addRippleEffectOnClick()
@@ -94,10 +86,10 @@ class LoadingButton @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canvas?.run {
-            drawPath(rectPath, rectPaint)
+            drawPath(baseContent.path, baseContent.paint)
             if (buttonState == ButtonState.Loading) {
-                drawPath(animatedPath, animatedPaint)
-                drawPath(circlePath, circlePaint)
+                drawPath(progressBar.path, progressBar.paint)
+                drawPath(progressCircle.path, progressCircle.paint)
                 myDrawText(-radius - SPACE / 2)
             } else {
                 myDrawText(0f)
@@ -107,7 +99,7 @@ class LoadingButton @JvmOverloads constructor(
 
     private fun refreshButton() {
         rect.set(0f, 0f, widthSize.toFloat(), heightSize.toFloat())
-        rectPath.apply {
+        baseContent.path.apply {
             reset()
             addRect(rect, Path.Direction.CW)
         }
@@ -121,7 +113,7 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun refreshInactiveButton() {
-        rectPaint.color = Color.LTGRAY
+        baseContent.paint.color = Color.LTGRAY
         textPaint.apply {
             color = Color.BLACK
             textAlign = Paint.Align.CENTER
@@ -130,7 +122,7 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun refreshActiveButton() {
-        rectPaint.color = ContextCompat.getColor(context, R.color.colorPrimary)
+        baseContent.setColor(context, R.color.colorPrimary)
         textPaint.apply {
             color = Color.WHITE
             textAlign = Paint.Align.CENTER
@@ -139,7 +131,7 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun refreshLoadingButton() {
-        rectPaint.color = ContextCompat.getColor(context, R.color.colorPrimary)
+        baseContent.setColor(context, R.color.colorPrimary)
         textPaint.apply {
             color = Color.WHITE
             textAlign = Paint.Align.CENTER
@@ -149,11 +141,11 @@ class LoadingButton @JvmOverloads constructor(
         val buttonTextWidth = textPaint.measureText(buttonText)
         circlePositionX = (widthSize + buttonTextWidth + SPACE) / 2 - radius
 
-        barAnimator.run {
+        progressBar.animator.run {
             setFloatValues(0f, widthSize.toFloat())
             start()
         }
-        circleAnimator.start()
+        progressCircle.animator.start()
     }
 
     private fun Canvas.myDrawText(textShift: Float) {
@@ -184,15 +176,15 @@ class LoadingButton @JvmOverloads constructor(
     override fun onAnimationUpdate(animation: ValueAnimator?) {
         animation?.let {
             val value = it.animatedValue as Float
-            if (animation == barAnimator) {
-                animatedPath.apply {
+            if (animation == progressBar.animator) {
+                progressBar.path.apply {
                     reset()
                     rect.set(0f, 0f, value, heightSize.toFloat())
                     addRect(rect, Path.Direction.CW)
                 }
             } else {
                 rect.set(circlePositionX, radius, circlePositionX + 2 * radius, 3 * radius)
-                circlePath.apply {
+                progressCircle.path.apply {
                     reset()
                     arcTo(rect, -180f, value)
                     lineTo(circlePositionX + radius, 2 * radius)
@@ -200,6 +192,30 @@ class LoadingButton @JvmOverloads constructor(
                 }
             }
             invalidate()
+        }
+    }
+
+    private class ViewContent(
+        isAnimated: Boolean = false,
+        listener: ValueAnimator.AnimatorUpdateListener? = null
+    ) {
+        val path = Path()
+        val paint = Paint().apply {
+            isAntiAlias = true
+        }
+
+        lateinit var animator: ValueAnimator
+
+        init {
+            if (isAnimated) animator = ValueAnimator().apply {
+                duration = DURATION
+                repeatCount = INFINITE
+                addUpdateListener(listener)
+            }
+        }
+
+        fun setColor(context: Context, colorId: Int) {
+            paint.color = ContextCompat.getColor(context, colorId)
         }
     }
 }
