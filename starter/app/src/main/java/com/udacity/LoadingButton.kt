@@ -45,7 +45,6 @@ class LoadingButton @JvmOverloads constructor(
     private val barAnimator = valueAnimator
 
     private val circlePath = Path()
-    private val circleRect = RectF()
     private val circlePaint = Paint().apply {
         style = Paint.Style.FILL
         color = Color.MAGENTA
@@ -184,24 +183,23 @@ class LoadingButton @JvmOverloads constructor(
 
     override fun onAnimationUpdate(animation: ValueAnimator?) {
         animation?.let {
+            val value = it.animatedValue as Float
             if (animation == barAnimator) {
-                val value = it.animatedValue as Float
                 animatedPath.apply {
                     reset()
-                    addRect(0f, 0f, value, heightSize.toFloat(), Path.Direction.CW)
-                    invalidate()
+                    rect.set(0f, 0f, value, heightSize.toFloat())
+                    addRect(rect, Path.Direction.CW)
                 }
             } else {
-                val value = it.animatedValue as Float
-                circleRect.set(circlePositionX, radius, circlePositionX + 2 * radius, 3 * radius)
+                rect.set(circlePositionX, radius, circlePositionX + 2 * radius, 3 * radius)
                 circlePath.apply {
                     reset()
-                    arcTo(circleRect, -180f, value)
+                    arcTo(rect, -180f, value)
                     lineTo(circlePositionX + radius, 2 * radius)
                     lineTo(circlePositionX, 2 * radius)
-                    invalidate()
                 }
             }
+            invalidate()
         }
     }
 }
