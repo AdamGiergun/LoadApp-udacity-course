@@ -31,15 +31,11 @@ class MainActivity : AppCompatActivity() {
                 downloadChooser.setOnCheckedChangeListener { _, checkedId ->
                     viewModel.setDownloadOptionId(checkedId)
                 }
-
+                downloadButton.setOnClickListener {
+                    viewModel.downloadButtonClicked()
+                }
                 viewModel.downloadButtonState.observe(this@MainActivity) {
                     downloadButton.setState(it)
-                    when (it) {
-                        ButtonState.Inactive -> downloadButton.setOnClickListener { showInfo(false) }
-                        ButtonState.Active -> downloadButton.setOnClickListener { viewModel.download() }
-                        ButtonState.Completed -> downloadButton.setOnClickListener { showInfo(true) }
-                        else -> downloadButton.setOnClickListener {}
-                    }
                 }
             }
         }
@@ -48,19 +44,10 @@ class MainActivity : AppCompatActivity() {
             viewModel.receiver,
             IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
         )
-    }
 
-    private fun showInfo(isDownloadChosen: Boolean) {
-        Toast.makeText(
-            this,
-            getString(
-                if (isDownloadChosen)
-                    R.string.please_choose_another_download
-                else
-                    R.string.please_choose_download
-            ),
-            Toast.LENGTH_SHORT
-        ).show()
+        viewModel.showInfo.observe(this) {
+            if (it) Toast.makeText(this, viewModel.infoId, Toast.LENGTH_SHORT).show()
+        }
     }
 
     companion object {

@@ -14,7 +14,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import java.io.File
 
-class MainViewModel(application: Application): AndroidViewModel(application) {
+class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _downloadButtonState = MutableLiveData<ButtonState>().apply {
         value = ButtonState.Inactive
@@ -36,23 +36,26 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         if (downloadOptionId != id) {
             _downloadButtonState.value = ButtonState.Active
             downloadOptionId = id
-            uri = Uri.parse(when (id) {
-                R.id.glide_radio -> "https://github.com/bumptech/glide/archive/master.zip"
-                R.id.loadapp_radio -> "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
-                R.id.retrofit_radio -> "https://github.com/square/retrofit/archive/master.zip"
-                else -> ""
-            })
+            uri = Uri.parse(
+                when (id) {
+                    R.id.glide_radio -> "https://github.com/bumptech/glide/archive/master.zip"
+                    R.id.loadapp_radio -> "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
+                    R.id.retrofit_radio -> "https://github.com/square/retrofit/archive/master.zip"
+                    else -> ""
+                }
+            )
         }
     }
 
-    private val app = getApplication<Application>()
+    private val app
+        get() = getApplication<Application>()
     private var downloadID: Long = 0
+    private val downloadDir =
+        ContextCompat.getExternalFilesDirs(app, Environment.DIRECTORY_DOWNLOADS)[0]
 
-    fun download() {
+    private fun download() {
         _downloadButtonState.value = ButtonState.Loading
         val fileName = uri.pathSegments[uri.pathSegments.size - 3]
-        val downloadDir = ContextCompat.getExternalFilesDirs(app, Environment.DIRECTORY_DOWNLOADS)[0]
-
         val file = File("${downloadDir.path}/$fileName")
 
         val request =
@@ -68,7 +71,31 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
             }
 
         val downloadManager = ContextCompat.getSystemService(app, DownloadManager::class.java)
-        downloadID =
-            downloadManager?.enqueue(request) ?: -1 // enqueue puts the download request in the queue.
+        downloadID = downloadManager?.enqueue(request) ?: -1
+    }
+
+    private val _showInfo = MutableLiveData<Boolean>()
+    val showInfo: LiveData<Boolean>
+        get() = _showInfo
+
+    val infoId
+        get() = if (downloadButtonState.value == ButtonState.Inactive)
+            R.string.please_choose_download
+        else
+            R.string.please_choose_another_download
+
+    fun downloadButtonClicked() {
+        when (downloadButtonState.value) {
+            ButtonState.Inactive -> showInfo()
+            ButtonState.Active -> download()
+            ButtonState.Completed -> showInfo()
+            else -> {
+            }
+        }
+    }
+
+    private fun showInfo() {
+        _showInfo.value = true
+        _showInfo.value = false
     }
 }
