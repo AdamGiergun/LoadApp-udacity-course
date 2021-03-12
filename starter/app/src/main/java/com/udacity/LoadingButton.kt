@@ -3,11 +3,13 @@ package com.udacity
 import android.animation.ValueAnimator
 import android.animation.ValueAnimator.INFINITE
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.*
 import android.os.Build
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import kotlin.properties.Delegates
@@ -24,34 +26,26 @@ class LoadingButton @JvmOverloads constructor(
 
     private var widthSize = 0
     private var heightSize = 0
-    private val defaultTextSize = resources.getDimension(R.dimen.default_text_size)
-    private lateinit var buttonText: String
+    private val buttonText = ButtonText(resources)
 
     private val rect = RectF()
 
     private val baseContent = ViewContent()
 
-    private val textPaint = Paint().apply {
-        textSize = defaultTextSize
-    }
-
     private val progressBar =
-        ViewContent(true, this).apply {
+        ProgressAnimation(this).apply {
             setColor(context, R.color.colorPrimaryDark)
         }
 
     private val progressCircle =
-        ViewContent(true, this).apply {
+        CircleAnimation(this).apply {
             paint.apply {
                 style = Paint.Style.FILL
                 color = Color.MAGENTA
                 isAntiAlias = true
             }
-            animator.apply { setFloatValues(0f, 360f) }
+            animator.setFloatValues(0f, 360f)
         }
-
-    private var circlePositionX = 0f
-    private var radius = 0f
 
     private var buttonState by Delegates.observable<ButtonState>(ButtonState.Inactive) { _, _, new ->
         if (new != ButtonState.Inactive) {
@@ -61,22 +55,22 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     init {
-        addRippleEffectOnClick()
-    }
-
-    private fun addRippleEffectOnClick() {
         isClickable = true
         isFocusable = true
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val outValue = TypedValue()
-            context.theme.resolveAttribute(
-                android.R.attr.selectableItemBackgroundBorderless,
-                outValue,
-                true
-            )
-            foreground = ResourcesCompat.getDrawable(resources, outValue.resourceId, context.theme)
+            addRippleEffectOnClick()
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun addRippleEffectOnClick() {
+        val outValue = TypedValue()
+        context.theme.resolveAttribute(
+            android.R.attr.selectableItemBackgroundBorderless,
+            outValue,
+            true
+        )
+        foreground = ResourcesCompat.getDrawable(resources, outValue.resourceId, context.theme)
     }
 
     fun setState(newButtonState: ButtonState) {
@@ -90,7 +84,7 @@ class LoadingButton @JvmOverloads constructor(
             if (buttonState == ButtonState.Loading) {
                 drawPath(progressBar.path, progressBar.paint)
                 drawPath(progressCircle.path, progressCircle.paint)
-                myDrawText(-radius - SPACE / 2)
+                myDrawText(-progressCircle.radius - SPACE / 2)
             } else {
                 myDrawText(0f)
             }
@@ -114,32 +108,31 @@ class LoadingButton @JvmOverloads constructor(
 
     private fun refreshInactiveButton() {
         baseContent.paint.color = Color.LTGRAY
-        textPaint.apply {
+        buttonText.paint.apply {
             color = Color.BLACK
             textAlign = Paint.Align.CENTER
         }
-        buttonText = context.getString(R.string.choose_download)
+        buttonText.value = context.getString(R.string.choose_download)
     }
 
     private fun refreshActiveButton() {
         baseContent.setColor(context, R.color.colorPrimary)
-        textPaint.apply {
+        buttonText.paint.apply {
             color = Color.WHITE
             textAlign = Paint.Align.CENTER
         }
-        buttonText = context.getString(R.string.download)
+        buttonText.value = context.getString(R.string.download)
     }
 
     private fun refreshLoadingButton() {
         baseContent.setColor(context, R.color.colorPrimary)
-        textPaint.apply {
+        buttonText.paint.apply {
             color = Color.WHITE
             textAlign = Paint.Align.CENTER
         }
-        buttonText = context.getString(R.string.loading)
+        buttonText.value = context.getString(R.string.loading)
 
-        val buttonTextWidth = textPaint.measureText(buttonText)
-        circlePositionX = (widthSize + buttonTextWidth + SPACE) / 2 - radius
+        progressCircle.setPositionX(widthSize.toFloat(), buttonText.width)
 
         progressBar.animator.run {
             setFloatValues(0f, widthSize.toFloat())
@@ -149,12 +142,12 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun Canvas.myDrawText(textShift: Float) {
-        val textOffset = (textPaint.descent() + textPaint.ascent()) / 2
+        val textOffset = (buttonText.paint.descent() + buttonText.paint.ascent()) / 2
         drawText(
-            buttonText,
+            buttonText.value,
             (widthSize / 2).toFloat() + textShift,
             ((heightSize / 2) - textOffset),
-            textPaint
+            buttonText.paint
         )
     }
 
@@ -168,7 +161,7 @@ class LoadingButton @JvmOverloads constructor(
         )
         widthSize = w
         heightSize = h
-        radius = (heightSize / 4).toFloat()
+        progressCircle.radius = (heightSize / 4).toFloat()
         setMeasuredDimension(w, h)
         refreshButton()
     }
@@ -183,39 +176,65 @@ class LoadingButton @JvmOverloads constructor(
                     addRect(rect, Path.Direction.CW)
                 }
             } else {
-                rect.set(circlePositionX, radius, circlePositionX + 2 * radius, 3 * radius)
+                rect.set(
+                    progressCircle.positionX,
+                    progressCircle.radius,
+                    progressCircle.positionX + 2 * progressCircle.radius,
+                    3 * progressCircle.radius
+                )
                 progressCircle.path.apply {
                     reset()
                     arcTo(rect, -180f, value)
-                    lineTo(circlePositionX + radius, 2 * radius)
-                    lineTo(circlePositionX, 2 * radius)
+                    lineTo(
+                        progressCircle.positionX + progressCircle.radius,
+                        2 * progressCircle.radius
+                    )
+                    lineTo(progressCircle.positionX, 2 * progressCircle.radius)
                 }
             }
             invalidate()
         }
     }
 
-    private class ViewContent(
-        isAnimated: Boolean = false,
-        listener: ValueAnimator.AnimatorUpdateListener? = null
-    ) {
+    private open class ViewContent {
         val path = Path()
         val paint = Paint().apply {
             isAntiAlias = true
         }
 
-        lateinit var animator: ValueAnimator
-
-        init {
-            if (isAnimated) animator = ValueAnimator().apply {
-                duration = DURATION
-                repeatCount = INFINITE
-                addUpdateListener(listener)
-            }
-        }
-
         fun setColor(context: Context, colorId: Int) {
             paint.color = ContextCompat.getColor(context, colorId)
         }
+    }
+
+    private open class ProgressAnimation(listener: ValueAnimator.AnimatorUpdateListener) :
+        ViewContent() {
+        val animator: ValueAnimator = ValueAnimator().apply {
+            duration = DURATION
+            repeatCount = INFINITE
+            addUpdateListener(listener)
+        }
+    }
+
+    private class CircleAnimation(listener: ValueAnimator.AnimatorUpdateListener) :
+        ProgressAnimation(listener) {
+        var radius = 0f
+        var positionX = 0f
+            private set
+
+        fun setPositionX(widthSize: Float, textWidth: Float) {
+            positionX = (widthSize + textWidth + SPACE) / 2 - radius
+        }
+    }
+
+    private class ButtonText(resources: Resources) {
+        lateinit var value: String
+
+        val paint = Paint().apply {
+            textSize = resources.getDimension(R.dimen.default_text_size)
+        }
+
+        val width
+            get() = paint.measureText(value)
     }
 }
