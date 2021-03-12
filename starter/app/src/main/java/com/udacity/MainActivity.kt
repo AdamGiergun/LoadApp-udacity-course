@@ -20,8 +20,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pendingIntent: PendingIntent
     private lateinit var action: NotificationCompat.Action
 
-    private var downloadChosen = false
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ActivityMainBinding.inflate(layoutInflater).run {
@@ -29,32 +27,27 @@ class MainActivity : AppCompatActivity() {
             setContentView(root)
             setSupportActionBar(toolbar)
 
-            registerReceiver(
-                viewModel.receiver,
-                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
-            )
-
-            contentMain.customButton.apply {
-                setState(ButtonState.Inactive)
-                setOnClickListener { showInfo() }
-            }
-
-            contentMain.downloadChooser.setOnCheckedChangeListener { _, checkedId ->
-                if (!downloadChosen) {
-                    downloadChosen = true
-                    contentMain.customButton.setOnClickListener {
-                        (it as LoadingButton).setState(ButtonState.Loading)
-                        viewModel.download()
-                    }
+            contentMain.run {
+                downloadChooser.setOnCheckedChangeListener { _, checkedId ->
+                    viewModel.setDownloadOptionId(checkedId)
                 }
-                contentMain.customButton.setState(ButtonState.Active)
-                viewModel.setDownloadUri(checkedId)
-            }
 
-            viewModel.downloadCompleted.observe(this@MainActivity) {
-                if (it) contentMain.customButton.setState(ButtonState.Active)
+                viewModel.downloadButtonState.observe(this@MainActivity) {
+                    downloadButton.setState(it)
+                    when (it) {
+                        ButtonState.Inactive -> downloadButton.setOnClickListener { showInfo() }
+                        ButtonState.Active -> downloadButton.setOnClickListener { viewModel.download() }
+                        else -> downloadButton.setOnClickListener {}
+                    }
+                    if (it == ButtonState.Completed) viewModel.completedStateConsumed()
+                }
             }
         }
+
+        registerReceiver(
+            viewModel.receiver,
+            IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        )
     }
 
     private fun showInfo() {
