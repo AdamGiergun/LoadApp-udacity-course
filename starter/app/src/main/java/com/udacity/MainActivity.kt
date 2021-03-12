@@ -35,11 +35,11 @@ class MainActivity : AppCompatActivity() {
                 viewModel.downloadButtonState.observe(this@MainActivity) {
                     downloadButton.setState(it)
                     when (it) {
-                        ButtonState.Inactive -> downloadButton.setOnClickListener { showInfo() }
+                        ButtonState.Inactive -> downloadButton.setOnClickListener { showInfo(false) }
                         ButtonState.Active -> downloadButton.setOnClickListener { viewModel.download() }
+                        ButtonState.Completed -> downloadButton.setOnClickListener { showInfo(true) }
                         else -> downloadButton.setOnClickListener {}
                     }
-                    if (it == ButtonState.Completed) viewModel.completedStateConsumed()
                 }
             }
         }
@@ -50,8 +50,17 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun showInfo() {
-        Toast.makeText(this, "Please, choose what to download first", Toast.LENGTH_SHORT).show()
+    private fun showInfo(isDownloadChosen: Boolean) {
+        Toast.makeText(
+            this,
+            getString(
+                if (isDownloadChosen)
+                    R.string.please_choose_another_download
+                else
+                    R.string.please_choose_download
+            ),
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     companion object {

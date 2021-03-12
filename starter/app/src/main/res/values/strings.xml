@@ -18,4 +18,7 @@
     <string name="download">Download</string>
     <string name="download_picture">Download picture</string>
     <string name="loading">We are loading</string>
+    <string name="download_completed">Download completed</string>
+    <string name="please_choose_download">Please, choose what to download first</string>
+    <string name="please_choose_another_download">Please, choose another download first</string>
 </resources>

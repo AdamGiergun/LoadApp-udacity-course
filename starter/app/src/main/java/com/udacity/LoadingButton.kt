@@ -16,7 +16,7 @@ import kotlin.properties.Delegates
 
 private const val SPACE = 50f
 private const val DURATION = 2000L
-private val changingLookStates = listOf(ButtonState.Active, ButtonState.Loading)
+private val changingLookStates = listOf(ButtonState.Active, ButtonState.Loading, ButtonState.Completed)
 
 class LoadingButton @JvmOverloads constructor(
     context: Context,
@@ -99,15 +99,16 @@ class LoadingButton @JvmOverloads constructor(
             addRect(rect, Path.Direction.CW)
         }
         when (buttonState) {
-            ButtonState.Inactive -> refreshInactiveButton()
-            ButtonState.Active -> refreshActiveButton()
-            ButtonState.Loading -> refreshLoadingButton()
+            ButtonState.Inactive -> refreshButtonAsInactive()
+            ButtonState.Active -> refreshButtonAsActive()
+            ButtonState.Loading -> refreshButtonAsLoading()
+            ButtonState.Completed -> refreshButtonAsCompleted()
             else -> {
             }
         }
     }
 
-    private fun refreshInactiveButton() {
+    private fun refreshButtonAsInactive() {
         baseContent.paint.color = Color.LTGRAY
         buttonText.paint.apply {
             color = Color.BLACK
@@ -116,7 +117,7 @@ class LoadingButton @JvmOverloads constructor(
         buttonText.value = context.getString(R.string.choose_download)
     }
 
-    private fun refreshActiveButton() {
+    private fun refreshButtonAsActive() {
         baseContent.setColor(context, R.color.colorPrimary)
         buttonText.paint.apply {
             color = Color.WHITE
@@ -125,7 +126,7 @@ class LoadingButton @JvmOverloads constructor(
         buttonText.value = context.getString(R.string.download)
     }
 
-    private fun refreshLoadingButton() {
+    private fun refreshButtonAsLoading() {
         baseContent.setColor(context, R.color.colorPrimary)
         buttonText.paint.apply {
             color = Color.WHITE
@@ -140,6 +141,15 @@ class LoadingButton @JvmOverloads constructor(
             start()
         }
         progressCircle.animator.start()
+    }
+
+    private fun refreshButtonAsCompleted() {
+        baseContent.paint.color = Color.LTGRAY
+        buttonText.paint.apply {
+            color = Color.BLACK
+            textAlign = Paint.Align.CENTER
+        }
+        buttonText.value = context.getString(R.string.download_completed)
     }
 
     private fun Canvas.myDrawText(textShift: Float) {

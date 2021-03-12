@@ -22,10 +22,6 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
     val downloadButtonState: LiveData<ButtonState>
         get() = _downloadButtonState
 
-    fun completedStateConsumed() {
-        _downloadButtonState.value = ButtonState.Active
-    }
-
     val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
