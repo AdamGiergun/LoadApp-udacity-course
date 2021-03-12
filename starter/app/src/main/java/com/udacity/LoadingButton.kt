@@ -16,6 +16,7 @@ import kotlin.properties.Delegates
 
 private const val SPACE = 50f
 private const val DURATION = 2000L
+private val changingLookStates = listOf(ButtonState.Active, ButtonState.Loading)
 
 class LoadingButton @JvmOverloads constructor(
     context: Context,
@@ -48,7 +49,7 @@ class LoadingButton @JvmOverloads constructor(
         }
 
     private var buttonState by Delegates.observable<ButtonState>(ButtonState.Inactive) { _, _, new ->
-        if (new != ButtonState.Inactive) {
+        if (new in changingLookStates) {
             refreshButton()
             invalidate()
         }
