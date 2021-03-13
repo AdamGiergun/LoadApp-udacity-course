@@ -10,7 +10,6 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import kotlin.properties.Delegates
 
@@ -25,41 +24,36 @@ class LoadingButton @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr),
     ValueAnimator.AnimatorUpdateListener {
 
-    private var widthSize = 0
-    private var heightSize = 0
-    private val buttonText = ButtonText(resources)
-
-    private val rect = RectF()
-
-    private val baseContent = ViewContent()
-
-    private val progressBar =
-        ProgressAnimation(this).apply {
-            setColor(context, R.color.colorPrimaryDark)
-        }
-
-    private val progressCircle =
-        CircleAnimation(this).apply {
-            paint.apply {
-                style = Paint.Style.FILL
-                color = Color.MAGENTA
-                isAntiAlias = true
-            }
-            animator.setFloatValues(0f, 360f)
-        }
-
-    private var buttonState by Delegates.observable<ButtonState>(ButtonState.Inactive) { _, _, new ->
-        if (new in changingLookStates) {
-            refreshButton()
-            invalidate()
-        }
-    }
+    private val lightTextColor: Int
+    private val darkTextColor: Int
+    private val lightButtonColor: Int
+    private val darkButtonColor: Int
+    private val progressBarColor: Int
+    private val progressCircleColor: Int
 
     init {
         isClickable = true
         isFocusable = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             addRippleEffectOnClick()
+        }
+
+        context.theme.obtainStyledAttributes(
+            attrs,
+            R.styleable.LoadingButton,
+            0,
+            0
+        ).apply {
+            try {
+                lightTextColor = getColor(R.styleable.LoadingButton_lightTextColor, Color.WHITE)
+                darkTextColor = getColor(R.styleable.LoadingButton_darkTextColor, Color.BLACK)
+                lightButtonColor = getColor(R.styleable.LoadingButton_lightButtonColor, Color.LTGRAY)
+                darkButtonColor = getColor(R.styleable.LoadingButton_darkButtonColor, Color.rgb(7, 194, 170))
+                progressBarColor = getColor(R.styleable.LoadingButton_progressBarColor, Color.rgb(0,67,73))
+                progressCircleColor = getColor(R.styleable.LoadingButton_progressCircleColor, Color.MAGENTA)
+            } finally {
+                recycle()
+            }
         }
     }
 
@@ -72,6 +66,36 @@ class LoadingButton @JvmOverloads constructor(
             true
         )
         foreground = ResourcesCompat.getDrawable(resources, outValue.resourceId, context.theme)
+    }
+    
+    private var widthSize = 0
+    private var heightSize = 0
+    private val buttonText = ButtonText(resources)
+
+    private val rect = RectF()
+
+    private val baseContent = ViewContent()
+
+    private val progressBar =
+        ProgressAnimation(this).apply {
+            setColor(progressBarColor)
+        }
+
+    private val progressCircle =
+        CircleAnimation(this).apply {
+            paint.apply {
+                style = Paint.Style.FILL
+                color = progressCircleColor
+                isAntiAlias = true
+            }
+            animator.setFloatValues(0f, 360f)
+        }
+
+    private var buttonState by Delegates.observable<ButtonState>(ButtonState.Inactive) { _, _, new ->
+        if (new in changingLookStates) {
+            refreshButton()
+            invalidate()
+        }
     }
 
     fun setState(newButtonState: ButtonState) {
@@ -109,27 +133,27 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun refreshButtonAsInactive() {
-        baseContent.paint.color = Color.LTGRAY
+        baseContent.paint.color = lightButtonColor
         buttonText.paint.apply {
-            color = Color.BLACK
+            color = darkTextColor
             textAlign = Paint.Align.CENTER
         }
         buttonText.value = context.getString(R.string.choose_download)
     }
 
     private fun refreshButtonAsActive() {
-        baseContent.setColor(context, R.color.colorPrimary)
+        baseContent.setColor(darkButtonColor)
         buttonText.paint.apply {
-            color = Color.WHITE
+            color = darkTextColor
             textAlign = Paint.Align.CENTER
         }
         buttonText.value = context.getString(R.string.download)
     }
 
     private fun refreshButtonAsLoading() {
-        baseContent.setColor(context, R.color.colorPrimary)
+        baseContent.setColor(darkButtonColor)
         buttonText.paint.apply {
-            color = Color.WHITE
+            color = lightTextColor
             textAlign = Paint.Align.CENTER
         }
         buttonText.value = context.getString(R.string.loading)
@@ -144,9 +168,9 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun refreshButtonAsCompleted() {
-        baseContent.paint.color = Color.LTGRAY
+        baseContent.paint.color = lightButtonColor
         buttonText.paint.apply {
-            color = Color.BLACK
+            color = darkTextColor
             textAlign = Paint.Align.CENTER
         }
         buttonText.value = context.getString(R.string.download_completed)
@@ -213,8 +237,8 @@ class LoadingButton @JvmOverloads constructor(
             isAntiAlias = true
         }
 
-        fun setColor(context: Context, colorId: Int) {
-            paint.color = ContextCompat.getColor(context, colorId)
+        fun setColor(colorId: Int) {
+            paint.color = colorId
         }
     }
 
