@@ -66,9 +66,15 @@
             android:layout_margin="20dp"
             android:onClick="@{() -> viewModel.downloadButtonClicked()}"
             app:buttonState="@{viewModel.downloadButtonState}"
+            app:darkButtonColor="@color/colorPrimary"
+            app:darkTextColor="@android:color/black"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:lightButtonColor="#cccccc"
+            app:lightTextColor="@android:color/white"
+            app:progressBarColor="@color/colorPrimaryDark"
+            app:progressCircleColor="#ff00ff" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
