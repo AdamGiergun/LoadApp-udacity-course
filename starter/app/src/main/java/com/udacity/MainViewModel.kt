@@ -8,6 +8,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.widget.RadioGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -32,7 +33,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private var downloadOptionId = -1
     private lateinit var uri: Uri
 
-    fun setDownloadOptionId(id: Int) {
+    fun RadioGroup.setDownloadOptionId(id: Int) {
         if (downloadOptionId != id) {
             _downloadButtonState.value = ButtonState.Active
             downloadOptionId = id

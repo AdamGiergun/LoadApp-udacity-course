@@ -13,7 +13,7 @@ import com.udacity.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    private val viewModel: MainViewModel by viewModels()
+    private val mainViewModel: MainViewModel by viewModels()
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var notificationManager: NotificationManager
@@ -24,29 +24,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         ActivityMainBinding.inflate(layoutInflater).run {
             binding = this
+            lifecycleOwner = this@MainActivity
             setContentView(root)
             setSupportActionBar(toolbar)
-
-            contentMain.run {
-                downloadChooser.setOnCheckedChangeListener { _, checkedId ->
-                    viewModel.setDownloadOptionId(checkedId)
-                }
-                downloadButton.setOnClickListener {
-                    viewModel.downloadButtonClicked()
-                }
-                viewModel.downloadButtonState.observe(this@MainActivity) {
-                    downloadButton.setState(it)
-                }
-            }
+            contentMain.viewModel = mainViewModel
         }
 
         registerReceiver(
-            viewModel.receiver,
+            mainViewModel.receiver,
             IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
         )
 
-        viewModel.showInfo.observe(this) {
-            if (it) Toast.makeText(this, viewModel.infoId, Toast.LENGTH_SHORT).show()
+        mainViewModel.showInfo.observe(this) {
+            if (it) Toast.makeText(this, mainViewModel.infoId, Toast.LENGTH_SHORT).show()
         }
     }
 
