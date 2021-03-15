@@ -77,7 +77,7 @@ class LoadingButton @JvmOverloads constructor(
 
     private val buttonText = ButtonText(resources.getDimension(R.dimen.default_text_size))
 
-    private val rect = RectF()
+    private val rectF = RectF()
 
     private val baseContent = ViewContent()
 
@@ -103,18 +103,18 @@ class LoadingButton @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canvas?.run {
-            drawPath(baseContent.path, baseContent.paint)
+            baseContent.draw(this)
             if (buttonState == ButtonState.Loading) {
-                drawPath(progressBar.path, progressBar.paint)
-                drawPath(progressCircle.path, progressCircle.paint)
+                progressBar.draw(this)
+                progressCircle.draw(this)
                 buttonText.draw(
-                    canvas,
+                    this,
                     (widthSize / 2) - progressCircle.radius - SPACE / 2,
-                    (heightSize /2).toFloat()
+                    (heightSize / 2).toFloat()
                 )
             } else {
                 buttonText.draw(
-                    canvas,
+                    this,
                     (widthSize / 2).toFloat(),
                     (heightSize / 2).toFloat()
                 )
@@ -123,11 +123,8 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun refreshButton() {
-        rect.set(0f, 0f, widthSize.toFloat(), heightSize.toFloat())
-        baseContent.path.apply {
-            reset()
-            addRect(rect, Path.Direction.CW)
-        }
+        rectF.set(0f, 0f, widthSize.toFloat(), heightSize.toFloat())
+        baseContent.reset(rectF)
         when (buttonState) {
             ButtonState.Inactive -> refreshButtonAsInactive()
             ButtonState.Active -> refreshButtonAsActive()
@@ -143,7 +140,7 @@ class LoadingButton @JvmOverloads constructor(
         buttonText.paint.apply {
             color = darkTextColor
         }
-        buttonText.value = context.getString(R.string.choose_download)
+        buttonText.text = context.getString(R.string.choose_download)
     }
 
     private fun refreshButtonAsActive() {
@@ -151,7 +148,7 @@ class LoadingButton @JvmOverloads constructor(
         buttonText.paint.apply {
             color = darkTextColor
         }
-        buttonText.value = context.getString(R.string.download)
+        buttonText.text = context.getString(R.string.download)
     }
 
     private fun refreshButtonAsLoading() {
@@ -159,7 +156,7 @@ class LoadingButton @JvmOverloads constructor(
         buttonText.paint.apply {
             color = lightTextColor
         }
-        buttonText.value = context.getString(R.string.loading)
+        buttonText.text = context.getString(R.string.loading)
 
         progressCircle.setPositionX(widthSize.toFloat(), buttonText.width)
 
@@ -175,7 +172,7 @@ class LoadingButton @JvmOverloads constructor(
         buttonText.paint.apply {
             color = darkTextColor
         }
-        buttonText.value = context.getString(R.string.download_completed)
+        buttonText.text = context.getString(R.string.download_completed)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -197,13 +194,10 @@ class LoadingButton @JvmOverloads constructor(
         animation?.let {
             val value = it.animatedValue as Float
             if (animation == progressBar.animator) {
-                progressBar.path.apply {
-                    reset()
-                    rect.set(0f, 0f, value, heightSize.toFloat())
-                    addRect(rect, Path.Direction.CW)
-                }
+                rectF.set(0f, 0f, value, heightSize.toFloat())
+                progressBar.reset(rectF)
             } else {
-                rect.set(
+                rectF.set(
                     progressCircle.positionX,
                     progressCircle.radius,
                     progressCircle.positionX + 2 * progressCircle.radius,
@@ -211,7 +205,7 @@ class LoadingButton @JvmOverloads constructor(
                 )
                 progressCircle.path.apply {
                     reset()
-                    arcTo(rect, -180f, value)
+                    arcTo(rectF, -180f, value)
                     lineTo(
                         progressCircle.positionX + progressCircle.radius,
                         2 * progressCircle.radius
@@ -223,10 +217,19 @@ class LoadingButton @JvmOverloads constructor(
         }
     }
 
-    private open class ViewContent : SettableColor {
+    private open class ViewContent : Colorable {
         val path = Path()
         final override val paint = Paint().apply {
             isAntiAlias = true
+        }
+
+        fun draw(canvas: Canvas) = canvas.drawPath(path, paint)
+
+        fun reset(rectF: RectF) {
+            path.apply {
+                reset()
+                addRect(rectF, Path.Direction.CW)
+            }
         }
     }
 
@@ -255,8 +258,8 @@ class LoadingButton @JvmOverloads constructor(
         }
     }
 
-    private class ButtonText(textSize: Float) : SettableColor {
-        lateinit var value: String
+    private class ButtonText(textSize: Float) : Colorable {
+        lateinit var text: String
 
         override val paint = Paint().apply {
             this.textSize = textSize
@@ -265,14 +268,13 @@ class LoadingButton @JvmOverloads constructor(
         private val textOffset = (paint.descent() + paint.ascent()) / 2
 
         val width
-            get() = paint.measureText(value)
+            get() = paint.measureText(text)
 
-        fun draw(canvas: Canvas, x: Float, y: Float) {
-            canvas.drawText(value, x, y - textOffset, paint)
-        }
+        fun draw(canvas: Canvas, x: Float, y: Float) =
+            canvas.drawText(text, x, y - textOffset, paint)
     }
 
-    private interface SettableColor {
+    private interface Colorable {
         val paint: Paint
 
         fun setColor(colorId: Int) {
