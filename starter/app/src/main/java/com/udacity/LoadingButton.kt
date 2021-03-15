@@ -107,9 +107,17 @@ class LoadingButton @JvmOverloads constructor(
             if (buttonState == ButtonState.Loading) {
                 drawPath(progressBar.path, progressBar.paint)
                 drawPath(progressCircle.path, progressCircle.paint)
-                myDrawText(-progressCircle.radius - SPACE / 2)
+                buttonText.draw(
+                    canvas,
+                    (widthSize / 2) - progressCircle.radius - SPACE / 2,
+                    (heightSize /2).toFloat()
+                )
             } else {
-                myDrawText(0f)
+                buttonText.draw(
+                    canvas,
+                    (widthSize / 2).toFloat(),
+                    (heightSize / 2).toFloat()
+                )
             }
         }
     }
@@ -168,16 +176,6 @@ class LoadingButton @JvmOverloads constructor(
             color = darkTextColor
         }
         buttonText.value = context.getString(R.string.download_completed)
-    }
-
-    private fun Canvas.myDrawText(textShift: Float) {
-        val textOffset = (buttonText.paint.descent() + buttonText.paint.ascent()) / 2
-        drawText(
-            buttonText.value,
-            (widthSize / 2).toFloat() + textShift,
-            ((heightSize / 2) - textOffset),
-            buttonText.paint
-        )
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -264,9 +262,14 @@ class LoadingButton @JvmOverloads constructor(
             this.textSize = textSize
             textAlign = Paint.Align.CENTER
         }
+        private val textOffset = (paint.descent() + paint.ascent()) / 2
 
         val width
             get() = paint.measureText(value)
+
+        fun draw(canvas: Canvas, x: Float, y: Float) {
+            canvas.drawText(value, x, y - textOffset, paint)
+        }
     }
 
     private interface SettableColor {
