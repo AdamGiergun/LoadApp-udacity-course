@@ -17,4 +17,25 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
 
+    <style name="DownloadButton" parent="AppTheme">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">60dp</item>
+        <item name="android:layout_margin">20dp</item>
+    </style>
+
+    <style name="DownloadImg" parent="AppTheme">
+        <item name="android:background">@color/colorPrimaryDark</item>
+        <item name="android:contentDescription">@string/download_picture</item>
+    </style>
+
+    <style name="DownloadRadioButton" parent="AppTheme">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="DownloadRadioGroup" parent="AppTheme">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
 </resources>

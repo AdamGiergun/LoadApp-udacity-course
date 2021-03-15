@@ -20,20 +20,18 @@
 
         <ImageView
             android:id="@+id/download_img"
+            style="@style/DownloadImg"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorPrimaryDark"
-            android:contentDescription="@string/download_picture"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_cloud_download" />
+            app:srcCompat="@drawable/ic_cloud_download"
+            tools:ignore="ContentDescription" />
 
         <RadioGroup
             android:id="@+id/download_chooser"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:gravity="center_vertical"
+            style="@style/DownloadRadioGroup"
             android:onCheckedChanged="@{viewModel.setDownloadOptionId}"
             app:layout_constraintBottom_toTopOf="@id/download_button"
             app:layout_constraintEnd_toEndOf="parent"
@@ -42,28 +40,23 @@
 
             <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/glide_radio"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                style="@style/DownloadRadioButton"
                 android:text="@string/glide_library" />
 
             <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/loadapp_radio"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                style="@style/DownloadRadioButton"
                 android:text="@string/loadapp_repository" />
 
             <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/retrofit_radio"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                style="@style/DownloadRadioButton"
                 android:text="@string/retrofit_client" />
         </RadioGroup>
 
         <com.udacity.LoadingButton
             android:id="@+id/download_button"
-            android:layout_width="0dp"
-            android:layout_height="60dp"
-            android:layout_margin="20dp"
+            style="@style/DownloadButton"
             android:onClick="@{() -> viewModel.downloadButtonClicked()}"
             app:buttonState="@{viewModel.downloadButtonState}"
             app:darkButtonColor="@color/colorPrimary"
