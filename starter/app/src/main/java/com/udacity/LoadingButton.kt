@@ -3,7 +3,6 @@ package com.udacity
 import android.animation.ValueAnimator
 import android.animation.ValueAnimator.INFINITE
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.*
 import android.os.Build
 import android.util.AttributeSet
@@ -15,7 +14,8 @@ import kotlin.properties.Delegates
 
 private const val SPACE = 50f
 private const val DURATION = 2000L
-private val changingLookStates = listOf(ButtonState.Active, ButtonState.Loading, ButtonState.Completed)
+private val changingLookStates =
+    listOf(ButtonState.Active, ButtonState.Loading, ButtonState.Completed)
 
 class LoadingButton @JvmOverloads constructor(
     context: Context,
@@ -47,10 +47,14 @@ class LoadingButton @JvmOverloads constructor(
             try {
                 lightTextColor = getColor(R.styleable.LoadingButton_lightTextColor, Color.WHITE)
                 darkTextColor = getColor(R.styleable.LoadingButton_darkTextColor, Color.BLACK)
-                lightButtonColor = getColor(R.styleable.LoadingButton_lightButtonColor, Color.LTGRAY)
-                darkButtonColor = getColor(R.styleable.LoadingButton_darkButtonColor, Color.rgb(7, 194, 170))
-                progressBarColor = getColor(R.styleable.LoadingButton_progressBarColor, Color.rgb(0,67,73))
-                progressCircleColor = getColor(R.styleable.LoadingButton_progressCircleColor, Color.MAGENTA)
+                lightButtonColor =
+                    getColor(R.styleable.LoadingButton_lightButtonColor, Color.LTGRAY)
+                darkButtonColor =
+                    getColor(R.styleable.LoadingButton_darkButtonColor, Color.rgb(7, 194, 170))
+                progressBarColor =
+                    getColor(R.styleable.LoadingButton_progressBarColor, Color.rgb(0, 67, 73))
+                progressCircleColor =
+                    getColor(R.styleable.LoadingButton_progressCircleColor, Color.MAGENTA)
             } finally {
                 recycle()
             }
@@ -67,29 +71,23 @@ class LoadingButton @JvmOverloads constructor(
         )
         foreground = ResourcesCompat.getDrawable(resources, outValue.resourceId, context.theme)
     }
-    
+
     private var widthSize = 0
     private var heightSize = 0
-    private val buttonText = ButtonText(resources)
+
+    private val buttonText = ButtonText(resources.getDimension(R.dimen.default_text_size))
 
     private val rect = RectF()
 
     private val baseContent = ViewContent()
 
-    private val progressBar =
-        ProgressAnimation(this).apply {
-            setColor(progressBarColor)
-        }
+    private val progressBar = ProgressAnimation(this).apply {
+        setColor(progressBarColor)
+    }
 
-    private val progressCircle =
-        CircleAnimation(this).apply {
-            paint.apply {
-                style = Paint.Style.FILL
-                color = progressCircleColor
-                isAntiAlias = true
-            }
-            animator.setFloatValues(0f, 360f)
-        }
+    private val progressCircle = CircleAnimation(this).apply {
+        setColor(progressCircleColor)
+    }
 
     private var buttonState by Delegates.observable<ButtonState>(ButtonState.Inactive) { _, _, new ->
         if (new in changingLookStates) {
@@ -133,10 +131,9 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun refreshButtonAsInactive() {
-        baseContent.paint.color = lightButtonColor
+        baseContent.setColor(lightButtonColor)
         buttonText.paint.apply {
             color = darkTextColor
-            textAlign = Paint.Align.CENTER
         }
         buttonText.value = context.getString(R.string.choose_download)
     }
@@ -145,7 +142,6 @@ class LoadingButton @JvmOverloads constructor(
         baseContent.setColor(darkButtonColor)
         buttonText.paint.apply {
             color = darkTextColor
-            textAlign = Paint.Align.CENTER
         }
         buttonText.value = context.getString(R.string.download)
     }
@@ -154,7 +150,6 @@ class LoadingButton @JvmOverloads constructor(
         baseContent.setColor(darkButtonColor)
         buttonText.paint.apply {
             color = lightTextColor
-            textAlign = Paint.Align.CENTER
         }
         buttonText.value = context.getString(R.string.loading)
 
@@ -168,10 +163,9 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun refreshButtonAsCompleted() {
-        baseContent.paint.color = lightButtonColor
+        baseContent.setColor(lightButtonColor)
         buttonText.paint.apply {
             color = darkTextColor
-            textAlign = Paint.Align.CENTER
         }
         buttonText.value = context.getString(R.string.download_completed)
     }
@@ -231,14 +225,10 @@ class LoadingButton @JvmOverloads constructor(
         }
     }
 
-    private open class ViewContent {
+    private open class ViewContent : SettableColor {
         val path = Path()
-        val paint = Paint().apply {
+        final override val paint = Paint().apply {
             isAntiAlias = true
-        }
-
-        fun setColor(colorId: Int) {
-            paint.color = colorId
         }
     }
 
@@ -260,16 +250,30 @@ class LoadingButton @JvmOverloads constructor(
         fun setPositionX(widthSize: Float, textWidth: Float) {
             positionX = (widthSize + textWidth + SPACE) / 2 - radius
         }
+
+        init {
+            paint.style = Paint.Style.FILL
+            animator.setFloatValues(0f, 360f)
+        }
     }
 
-    private class ButtonText(resources: Resources) {
+    private class ButtonText(textSize: Float) : SettableColor {
         lateinit var value: String
 
-        val paint = Paint().apply {
-            textSize = resources.getDimension(R.dimen.default_text_size)
+        override val paint = Paint().apply {
+            this.textSize = textSize
+            textAlign = Paint.Align.CENTER
         }
 
         val width
             get() = paint.measureText(value)
+    }
+
+    private interface SettableColor {
+        val paint: Paint
+
+        fun setColor(colorId: Int) {
+            paint.color = colorId
+        }
     }
 }
