@@ -149,13 +149,8 @@ class LoadingButton @JvmOverloads constructor(
         buttonText.setColor(lightTextColor)
         buttonText.text = context.getString(R.string.loading)
 
-        progressCircle.setPositionX(widthSize.toFloat(), buttonText.width)
-
-        progressBar.animator.run {
-            setFloatValues(0f, widthSize.toFloat())
-            start()
-        }
-        progressCircle.animator.start()
+        progressBar.startAnimator(widthSize.toFloat())
+        progressCircle.startAnimator(widthSize.toFloat(), buttonText.width)
     }
 
     private fun refreshButtonAsCompleted() {
@@ -182,7 +177,7 @@ class LoadingButton @JvmOverloads constructor(
     override fun onAnimationUpdate(animation: ValueAnimator?) {
         animation?.let {
             val value = it.animatedValue as Float
-            if (animation == progressBar.animator) {
+            if (progressBar.isAnimator(animation)) {
                 progressBar.reset(value, heightSize.toFloat())
             } else {
                 progressCircle.reset(value)
@@ -219,10 +214,19 @@ class LoadingButton @JvmOverloads constructor(
 
     private open class ProgressAnimation(listener: ValueAnimator.AnimatorUpdateListener) :
         ViewContent() {
-        val animator: ValueAnimator = ValueAnimator().apply {
+        protected val animator: ValueAnimator = ValueAnimator().apply {
             duration = DURATION
             repeatCount = INFINITE
             addUpdateListener(listener)
+        }
+
+        fun isAnimator(valueAnimator: ValueAnimator) = valueAnimator == animator
+
+        open fun startAnimator(buttonWidth: Float, textWidth: Float = 0f) {
+            animator.apply {
+                setFloatValues(0f, buttonWidth)
+                start()
+            }
         }
     }
 
@@ -231,10 +235,6 @@ class LoadingButton @JvmOverloads constructor(
         var radius = 0f
         var positionX = 0f
             private set
-
-        fun setPositionX(widthSize: Float, textWidth: Float) {
-            positionX = (widthSize + textWidth + SPACE) / 2 - radius
-        }
 
         init {
             paint.style = Paint.Style.FILL
@@ -254,6 +254,11 @@ class LoadingButton @JvmOverloads constructor(
         override fun reset(width: Float, height: Float) {
             throw(UnsupportedOperationException())
         }
+
+        override fun startAnimator(buttonWidth: Float, textWidth: Float) {
+            positionX = (buttonWidth + textWidth + SPACE) / 2 - radius
+            animator.start()
+        }
     }
 
     private class ButtonText(textSize: Float) : Paintable() {
@@ -263,10 +268,11 @@ class LoadingButton @JvmOverloads constructor(
             this.textSize = textSize
             textAlign = Paint.Align.CENTER
         }
-        private val textOffset = (paint.descent() + paint.ascent()) / 2
 
         val width
             get() = paint.measureText(text)
+
+        private val textOffset = (paint.descent() + paint.ascent()) / 2
 
         fun draw(canvas: Canvas, x: Float, y: Float) =
             canvas.drawText(text, x, y - textOffset, paint)
