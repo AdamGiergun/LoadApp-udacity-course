@@ -63,11 +63,16 @@
             app:darkTextColor="@android:color/black"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/download_img"
+            app:layout_constraintStart_toStartOf="parent"
             app:lightButtonColor="#cccccc"
             app:lightTextColor="@android:color/white"
             app:progressBarColor="@color/colorPrimaryDark"
-            app:progressCircleColor="#ff00ff" />
+            app:progressCircleColor="#ff00ff"
+            app:stateActiveText="@string/download"
+            app:stateCompletedText="@string/download_completed"
+            app:stateInactiveText="@string/choose_download"
+            app:stateLoadingText="@string/loading"
+            app:textSize="@dimen/default_text_size" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

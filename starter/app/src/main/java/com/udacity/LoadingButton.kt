@@ -30,6 +30,11 @@ class LoadingButton @JvmOverloads constructor(
     private val darkButtonColor: Int
     private val progressBarColor: Int
     private val progressCircleColor: Int
+    private val textSize: Float
+    private val stateInactiveText: String
+    private val stateActiveText: String
+    private val stateLoadingText: String
+    private val stateCompletedText: String
 
     init {
         isClickable = true
@@ -55,6 +60,11 @@ class LoadingButton @JvmOverloads constructor(
                     getColor(R.styleable.LoadingButton_progressBarColor, Color.rgb(0, 67, 73))
                 progressCircleColor =
                     getColor(R.styleable.LoadingButton_progressCircleColor, Color.MAGENTA)
+                textSize = getDimension(R.styleable.LoadingButton_textSize, 52.5f)
+                stateInactiveText = getString(R.styleable.LoadingButton_stateInactiveText) ?: ""
+                stateActiveText = getString(R.styleable.LoadingButton_stateActiveText) ?: ""
+                stateLoadingText = getString(R.styleable.LoadingButton_stateLoadingText) ?: ""
+                stateCompletedText = getString(R.styleable.LoadingButton_stateCompletedText) ?: ""
             } finally {
                 recycle()
             }
@@ -75,7 +85,7 @@ class LoadingButton @JvmOverloads constructor(
     private var widthSize = 0
     private var heightSize = 0
 
-    private val buttonText = ButtonText(resources.getDimension(R.dimen.default_text_size))
+    private val buttonText = ButtonText(textSize)
 
     private val baseContent = ViewContent()
 
@@ -135,19 +145,19 @@ class LoadingButton @JvmOverloads constructor(
     private fun refreshButtonAsInactive() {
         baseContent.setColor(lightButtonColor)
         buttonText.setColor(darkTextColor)
-        buttonText.text = context.getString(R.string.choose_download)
+        buttonText.text = stateInactiveText
     }
 
     private fun refreshButtonAsActive() {
         baseContent.setColor(darkButtonColor)
         buttonText.setColor(darkTextColor)
-        buttonText.text = context.getString(R.string.download)
+        buttonText.text = stateActiveText
     }
 
     private fun refreshButtonAsLoading() {
         baseContent.setColor(darkButtonColor)
         buttonText.setColor(lightTextColor)
-        buttonText.text = context.getString(R.string.loading)
+        buttonText.text = stateLoadingText
 
         progressBar.startAnimator(widthSize.toFloat())
         progressCircle.startAnimator(widthSize.toFloat(), buttonText.width)
@@ -156,7 +166,7 @@ class LoadingButton @JvmOverloads constructor(
     private fun refreshButtonAsCompleted() {
         baseContent.setColor(lightButtonColor)
         buttonText.setColor(darkTextColor)
-        buttonText.text = context.getString(R.string.download_completed)
+        buttonText.text = stateCompletedText
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

@@ -67,7 +67,12 @@
             app:lightButtonColor="#cccccc"
             app:lightTextColor="@android:color/white"
             app:progressBarColor="@color/colorPrimaryDark"
-            app:progressCircleColor="#ff00ff" />
+            app:progressCircleColor="#ff00ff"
+            app:stateActiveText="@string/download"
+            app:stateCompletedText="@string/download_completed"
+            app:stateInactiveText="@string/choose_download"
+            app:stateLoadingText="@string/loading"
+            app:textSize="@dimen/default_text_size" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

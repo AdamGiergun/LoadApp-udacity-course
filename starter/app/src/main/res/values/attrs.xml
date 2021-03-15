@@ -7,5 +7,10 @@
         <attr name="lightButtonColor" format="color" />
         <attr name="darkButtonColor" format="color" />
         <attr name="progressBarColor" format="color" />
+        <attr name="textSize" format="dimension" />
+        <attr name="stateInactiveText" format="string" />
+        <attr name="stateActiveText" format="string" />
+        <attr name="stateLoadingText" format="string" />
+        <attr name="stateCompletedText" format="string" />
     </declare-styleable>
 </resources>
