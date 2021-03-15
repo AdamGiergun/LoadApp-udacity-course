@@ -77,8 +77,6 @@ class LoadingButton @JvmOverloads constructor(
 
     private val buttonText = ButtonText(resources.getDimension(R.dimen.default_text_size))
 
-    private val rectF = RectF()
-
     private val baseContent = ViewContent()
 
     private val progressBar = ProgressAnimation(this).apply {
@@ -123,8 +121,7 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun refreshButton() {
-        rectF.set(0f, 0f, widthSize.toFloat(), heightSize.toFloat())
-        baseContent.reset(rectF)
+        baseContent.reset(widthSize.toFloat(), heightSize.toFloat())
         when (buttonState) {
             ButtonState.Inactive -> refreshButtonAsInactive()
             ButtonState.Active -> refreshButtonAsActive()
@@ -137,25 +134,19 @@ class LoadingButton @JvmOverloads constructor(
 
     private fun refreshButtonAsInactive() {
         baseContent.setColor(lightButtonColor)
-        buttonText.paint.apply {
-            color = darkTextColor
-        }
+        buttonText.setColor(darkTextColor)
         buttonText.text = context.getString(R.string.choose_download)
     }
 
     private fun refreshButtonAsActive() {
         baseContent.setColor(darkButtonColor)
-        buttonText.paint.apply {
-            color = darkTextColor
-        }
+        buttonText.setColor(darkTextColor)
         buttonText.text = context.getString(R.string.download)
     }
 
     private fun refreshButtonAsLoading() {
         baseContent.setColor(darkButtonColor)
-        buttonText.paint.apply {
-            color = lightTextColor
-        }
+        buttonText.setColor(lightTextColor)
         buttonText.text = context.getString(R.string.loading)
 
         progressCircle.setPositionX(widthSize.toFloat(), buttonText.width)
@@ -169,9 +160,7 @@ class LoadingButton @JvmOverloads constructor(
 
     private fun refreshButtonAsCompleted() {
         baseContent.setColor(lightButtonColor)
-        buttonText.paint.apply {
-            color = darkTextColor
-        }
+        buttonText.setColor(darkTextColor)
         buttonText.text = context.getString(R.string.download_completed)
     }
 
@@ -194,40 +183,35 @@ class LoadingButton @JvmOverloads constructor(
         animation?.let {
             val value = it.animatedValue as Float
             if (animation == progressBar.animator) {
-                rectF.set(0f, 0f, value, heightSize.toFloat())
-                progressBar.reset(rectF)
+                progressBar.reset(value, heightSize.toFloat())
             } else {
-                rectF.set(
-                    progressCircle.positionX,
-                    progressCircle.radius,
-                    progressCircle.positionX + 2 * progressCircle.radius,
-                    3 * progressCircle.radius
-                )
-                progressCircle.path.apply {
-                    reset()
-                    arcTo(rectF, -180f, value)
-                    lineTo(
-                        progressCircle.positionX + progressCircle.radius,
-                        2 * progressCircle.radius
-                    )
-                    lineTo(progressCircle.positionX, 2 * progressCircle.radius)
-                }
+                progressCircle.reset(value)
             }
             invalidate()
         }
     }
 
-    private open class ViewContent : Colorable {
-        val path = Path()
+    private abstract class Paintable {
+        protected abstract val paint: Paint
+
+        fun setColor(colorId: Int) {
+            paint.color = colorId
+        }
+    }
+
+    private open class ViewContent : Paintable() {
+        protected val path = Path()
         final override val paint = Paint().apply {
             isAntiAlias = true
         }
+        protected val rectF = RectF()
 
         fun draw(canvas: Canvas) = canvas.drawPath(path, paint)
 
-        fun reset(rectF: RectF) {
+        open fun reset(width: Float, height: Float) {
             path.apply {
                 reset()
+                rectF.set(0f, 0f, width, height)
                 addRect(rectF, Path.Direction.CW)
             }
         }
@@ -256,9 +240,23 @@ class LoadingButton @JvmOverloads constructor(
             paint.style = Paint.Style.FILL
             animator.setFloatValues(0f, 360f)
         }
+
+        fun reset(angle: Float) {
+            rectF.set(positionX, radius, positionX + 2 * radius, 3 * radius)
+            path.apply {
+                reset()
+                arcTo(rectF, -180f, angle)
+                lineTo(positionX + radius, 2 * radius)
+                lineTo(positionX, 2 * radius)
+            }
+        }
+
+        override fun reset(width: Float, height: Float) {
+            throw(UnsupportedOperationException())
+        }
     }
 
-    private class ButtonText(textSize: Float) : Colorable {
+    private class ButtonText(textSize: Float) : Paintable() {
         lateinit var text: String
 
         override val paint = Paint().apply {
@@ -272,13 +270,5 @@ class LoadingButton @JvmOverloads constructor(
 
         fun draw(canvas: Canvas, x: Float, y: Float) =
             canvas.drawText(text, x, y - textOffset, paint)
-    }
-
-    private interface Colorable {
-        val paint: Paint
-
-        fun setColor(colorId: Int) {
-            paint.color = colorId
-        }
     }
 }
