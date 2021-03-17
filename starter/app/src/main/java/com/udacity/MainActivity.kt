@@ -39,8 +39,4 @@ class MainActivity : AppCompatActivity() {
             if (it) Toast.makeText(this, mainViewModel.infoId, Toast.LENGTH_SHORT).show()
         }
     }
-
-    companion object {
-        private const val CHANNEL_ID = "channelId"
-    }
 }
