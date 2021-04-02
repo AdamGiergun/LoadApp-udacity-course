@@ -30,7 +30,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 lightColor = Color.GREEN
                 enableVibration(true)
                 description = application.getString(R.string.channel_for_load_app)
-                val notificationManager = application.getSystemService(NotificationManager::class.java)
+                val notificationManager =
+                    application.getSystemService(NotificationManager::class.java)
                 notificationManager.createNotificationChannel(this)
             }
         }
@@ -44,26 +45,43 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-            context?.let {
-                if (id == downloadID) _downloadButtonState.value = ButtonState.Completed
+            context?.run {
+                var fileLocalUri = ""
+                intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)?.let { id ->
+                    if (id == downloadID) _downloadButtonState.value = ButtonState.Completed
 
-                val notificationIntent = Intent(context, DetailActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    val downloadManager =
+                        getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                    val query = DownloadManager.Query().setFilterById(id)
+                    downloadManager.query(query).use { cursor ->
+                        if (cursor.moveToFirst()) {
+                            val index = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)
+                            fileLocalUri = cursor.getString(index)
+                        }
+                    }
                 }
-                val pendingIntent: PendingIntent =
-                    PendingIntent.getActivity(context, 0, notificationIntent, 0)
 
-                val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_cloud_download)
-                    .setContentTitle(context.getString(R.string.notification_title))
-                    .setContentText(context.getString(R.string.notification_description))
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setContentIntent(pendingIntent)
-                    .setAutoCancel(true)
+                val notificationIntent = Intent(this, DetailActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    putExtra("fileLocalUri", fileLocalUri)
+                }
+                val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
-                with(NotificationManagerCompat.from(context)) {
-                    notify(NOTIFICATION_ID, builder.build())
+                NotificationCompat.Builder(this, CHANNEL_ID).apply {
+                    setSmallIcon(R.drawable.ic_assistant_black_24dp)
+                    setContentTitle(getString(R.string.notification_title))
+                    setContentText(getString(R.string.notification_description))
+                    priority = NotificationCompat.PRIORITY_DEFAULT
+                    setAutoCancel(true)
+                    addAction(
+                        R.drawable.ic_assistant_black_24dp,
+                        getString(R.string.details),
+                        pendingIntent
+                    )
+
+                    with(NotificationManagerCompat.from(this@run)) {
+                        notify(NOTIFICATION_ID, build())
+                    }
                 }
             }
         }
@@ -88,29 +106,31 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private var downloadID: Long = 0
-    private val downloadDir =
-        ContextCompat.getExternalFilesDirs(application, Environment.DIRECTORY_DOWNLOADS)[0]
 
     private fun download() {
         _downloadButtonState.value = ButtonState.Loading
-        val fileName = uri.pathSegments[uri.pathSegments.size - 3]
-        val file = File("${downloadDir.path}/$fileName")
         val app = getApplication<Application>()
 
-        val request =
-            DownloadManager.Request(uri).apply {
-                setDestinationUri(Uri.fromFile(file))
-                setTitle(fileName)
-                setDescription(app.getString(R.string.app_description))
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    setRequiresCharging(false)
-                }
-                setAllowedOverMetered(true)
-                setAllowedOverRoaming(true)
+        val fileName = uri.pathSegments[uri.pathSegments.size - 3]
+        val file = File("${getDownloadDir(app)}/$fileName.zip")
+
+        val request = DownloadManager.Request(uri).apply {
+            setDestinationUri(Uri.fromFile(file))
+            setTitle(fileName)
+            setDescription(app.getString(R.string.app_description))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                setRequiresCharging(false)
             }
+            setAllowedOverMetered(true)
+            setAllowedOverRoaming(true)
+        }
 
         val downloadManager = ContextCompat.getSystemService(app, DownloadManager::class.java)
         downloadID = downloadManager?.enqueue(request) ?: -1
+    }
+
+    private fun getDownloadDir(app: Application) = app.run {
+        getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)?.path ?: filesDir.path
     }
 
     private val _showInfo = MutableLiveData<Boolean>()
