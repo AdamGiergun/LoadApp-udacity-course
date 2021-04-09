@@ -32,7 +32,7 @@
         <RadioGroup
             android:id="@+id/download_chooser"
             style="@style/DownloadRadioGroup"
-            android:onCheckedChanged="@{viewModel.setDownloadOptionId}"
+            android:onCheckedChanged="@{viewModel::setDownloadOptionId}"
             app:layout_constraintBottom_toTopOf="@id/download_button"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
