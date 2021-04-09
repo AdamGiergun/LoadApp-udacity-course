@@ -11,6 +11,8 @@ class DetailActivity : AppCompatActivity() {
         ActivityDetailBinding.inflate(layoutInflater).run {
             setContentView(root)
             setSupportActionBar(toolbar)
+            val download: Download? = intent.getParcelableExtra("download")
+            download?.let { contentDetail.download = it }
         }
     }
 }
