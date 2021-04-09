@@ -1,6 +1,7 @@
 package com.udacity
 
 import android.app.*
+import android.app.DownloadManager.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -47,6 +48,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         override fun onReceive(context: Context?, intent: Intent?) {
             context?.run {
                 var fileLocalUri = ""
+                var downloadStatus = 0
                 intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)?.let { id ->
                     if (id == downloadID) _downloadButtonState.value = ButtonState.Completed
 
@@ -55,15 +57,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     val query = DownloadManager.Query().setFilterById(id)
                     downloadManager.query(query).use { cursor ->
                         if (cursor.moveToFirst()) {
-                            val index = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)
+                            var index = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)
                             fileLocalUri = cursor.getString(index)
+                            index = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
+                            downloadStatus = cursor.getInt(index)
                         }
                     }
                 }
 
                 val notificationIntent = Intent(this, DetailActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    putExtra("fileLocalUri", fileLocalUri)
+                    val download = Download("Name", downloadStatus, fileLocalUri)
+                    putExtra("download", download)
                 }
                 val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
