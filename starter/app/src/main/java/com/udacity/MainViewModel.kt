@@ -20,6 +20,8 @@ import java.io.File
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
+    private var notificationId = 1
+
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel(
@@ -49,28 +51,35 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             context?.run {
                 var fileLocalUri = ""
                 var downloadStatus = 0
-                intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)?.let { id ->
+                intent?.getLongExtra(EXTRA_DOWNLOAD_ID, -1)?.let { id ->
                     if (id == downloadID) _downloadButtonState.value = ButtonState.Completed
 
                     val downloadManager =
                         getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-                    val query = DownloadManager.Query().setFilterById(id)
+                    val query = Query().setFilterById(id)
                     downloadManager.query(query).use { cursor ->
                         if (cursor.moveToFirst()) {
-                            var index = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)
+                            var index = cursor.getColumnIndex(COLUMN_LOCAL_URI)
                             fileLocalUri = cursor.getString(index)
-                            index = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
+                            index = cursor.getColumnIndex(COLUMN_STATUS)
                             downloadStatus = cursor.getInt(index)
                         }
                     }
                 }
 
+                val downloadName = when {
+                    fileLocalUri.contains("glide") -> R.string.glide_library
+                    fileLocalUri.contains("nd940") -> R.string.loadapp_repository
+                    fileLocalUri.contains("retrofit") -> R.string.retrofit_client
+                    else -> 0
+                }
                 val notificationIntent = Intent(this, DetailActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    val download = Download("Name", downloadStatus, fileLocalUri)
+                    val download = Download(downloadName, downloadStatus, fileLocalUri)
                     putExtra("download", download)
+                    putExtra("notification_id", notificationId)
                 }
-                val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
+                val pendingIntent = PendingIntent.getActivity(this, notificationId, notificationIntent, 0)
 
                 NotificationCompat.Builder(this, CHANNEL_ID).apply {
                     setSmallIcon(R.drawable.ic_assistant_black_24dp)
@@ -85,8 +94,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     )
 
                     with(NotificationManagerCompat.from(this@run)) {
-                        notify(NOTIFICATION_ID, build())
+                        notify(notificationId, build())
                     }
+                    notificationId++
                 }
             }
         }
@@ -119,7 +129,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val fileName = uri.pathSegments[uri.pathSegments.size - 3]
         val file = File("${getDownloadDir(app)}/$fileName.zip")
 
-        val request = DownloadManager.Request(uri).apply {
+        val request = Request(uri).apply {
             setDestinationUri(Uri.fromFile(file))
             setTitle(fileName)
             setDescription(app.getString(R.string.app_description))
@@ -166,6 +176,5 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     companion object {
         private const val CHANNEL_ID = "loadAppChannel"
         private const val CHANNEL_NAME = "LoadApp"
-        private const val NOTIFICATION_ID = 1
     }
 }
