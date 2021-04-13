@@ -63,5 +63,17 @@
             app:layout_constraintStart_toStartOf="@+id/detailsText"
             app:layout_constraintTop_toBottomOf="@+id/detailsText" />
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_open"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="@dimen/fab_margin"
+            android:tag="@{download.localPath}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/outline_folder_open_24"
+            android:contentDescription="@string/open_button" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
