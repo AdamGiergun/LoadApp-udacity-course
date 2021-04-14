@@ -5,6 +5,7 @@ import android.app.DownloadManager.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -17,10 +18,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import java.io.File
+import kotlin.math.abs
+import kotlin.random.Random
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    private var notificationId = 1
+    private var notificationId = abs(Random.nextInt())
 
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -46,7 +49,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val downloadButtonState: LiveData<ButtonState>
         get() = _downloadButtonState
 
-    val receiver = object : BroadcastReceiver() {
+    private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             context?.run {
                 var fileLocalUri = ""
@@ -99,6 +102,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     notificationId++
                 }
             }
+            context?.unregisterReceiver(this)
         }
     }
 
@@ -132,7 +136,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val request = Request(uri).apply {
             setDestinationUri(Uri.fromFile(file))
             setTitle(fileName)
-            setDescription(app.getString(R.string.app_description))
+            setDescription(app.getString(R.string.app_description).replace("file", fileName))
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 setRequiresCharging(false)
             }
@@ -140,6 +144,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             setAllowedOverRoaming(true)
         }
 
+        app.registerReceiver(receiver, IntentFilter(ACTION_DOWNLOAD_COMPLETE))
         val downloadManager = ContextCompat.getSystemService(app, DownloadManager::class.java)
         downloadID = downloadManager?.enqueue(request) ?: -1
     }
