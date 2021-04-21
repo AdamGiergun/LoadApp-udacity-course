@@ -23,8 +23,7 @@
     <string name="please_choose_another_download">Please, choose another download first</string>
     <string name="channel_for_load_app">Channel for LoadApp</string>
     <string name="details">Details</string>
-    <string name="file_name">File name:</string>
-    <string name="status">Status:</string>
+    <string name="status">Status</string>
     <string name="failed">Failed</string>
     <string name="unknown">Unknown</string>
     <string name="paused">Paused</string>
@@ -32,4 +31,6 @@
     <string name="running">Running</string>
     <string name="successful">Successful</string>
     <string name="open_button">Open button</string>
+    <string name="location">Location</string>
+    <string name="title">Title</string>
 </resources>
