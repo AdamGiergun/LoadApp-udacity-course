@@ -54,5 +54,18 @@
         app:autoTransition="animateToEnd"
         app:constraintSetEnd="@id/end"
         app:constraintSetStart="@+id/start"
-        app:duration="750" />
+        app:duration="750">
+        <KeyFrameSet>
+            <KeyPosition
+                app:framePosition="80"
+                app:keyPositionType="parentRelative"
+                app:motionTarget="@id/titleLabel"
+                app:percentY="0.1" />
+            <KeyPosition
+                app:framePosition="80"
+                app:keyPositionType="parentRelative"
+                app:motionTarget="@id/titleText"
+                app:percentY="0.1" />
+        </KeyFrameSet>
+    </Transition>
 </MotionScene>
