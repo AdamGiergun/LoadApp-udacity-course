@@ -91,7 +91,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     setAutoCancel(true)
                     addAction(
                         R.drawable.ic_assistant_black_24dp,
-                        getString(R.string.details),
+                        getString(R.string.details_cap),
                         pendingIntent
                     )
 
