@@ -9,7 +9,6 @@ import android.content.IntentFilter
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.widget.RadioGroup
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -17,7 +16,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import java.io.File
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -52,8 +50,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             context?.run {
-                var fileLocalUri = ""
-                var downloadStatus = 0
+                var downloadStatus = STATUS_PENDING
+                var downloadTitle = ""
                 intent?.getLongExtra(EXTRA_DOWNLOAD_ID, -1)?.let { id ->
                     if (id == downloadID) _downloadButtonState.value = ButtonState.Completed
 
@@ -62,27 +60,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     val query = Query().setFilterById(id)
                     downloadManager.query(query).use { cursor ->
                         if (cursor.moveToFirst()) {
-                            var index = cursor.getColumnIndex(COLUMN_LOCAL_URI)
-                            fileLocalUri = cursor.getString(index)
-                            index = cursor.getColumnIndex(COLUMN_STATUS)
+                            var index = cursor.getColumnIndex(COLUMN_STATUS)
                             downloadStatus = cursor.getInt(index)
+                            index = cursor.getColumnIndex(COLUMN_TITLE)
+                            downloadTitle = cursor.getString(index)
                         }
                     }
                 }
 
-                val downloadName = when {
-                    fileLocalUri.contains("glide") -> R.string.glide_library
-                    fileLocalUri.contains("nd940") -> R.string.loadapp_repository
-                    fileLocalUri.contains("retrofit") -> R.string.retrofit_client
-                    else -> 0
+                val downloadDetails = when {
+                    downloadTitle.contains("glide") -> R.string.glide_library
+                    downloadTitle.contains("nd940") -> R.string.loadapp_repository
+                    downloadTitle.contains("retrofit") -> R.string.retrofit_client
+                    else -> R.string.unknown
                 }
                 val notificationIntent = Intent(this, DetailActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    val download = Download(downloadName, downloadStatus, fileLocalUri)
+                    val download = Download(downloadTitle, downloadDetails, downloadStatus)
                     putExtra("download", download)
                     putExtra("notification_id", notificationId)
                 }
-                val pendingIntent = PendingIntent.getActivity(this, notificationId, notificationIntent, 0)
+                val pendingIntent =
+                    PendingIntent.getActivity(this, notificationId, notificationIntent, 0)
 
                 NotificationCompat.Builder(this, CHANNEL_ID).apply {
                     setSmallIcon(R.drawable.ic_assistant_black_24dp)
@@ -130,13 +129,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _downloadButtonState.value = ButtonState.Loading
         val app = getApplication<Application>()
 
-        val fileName = uri.pathSegments[uri.pathSegments.size - 3]
-        val file = File("${getDownloadDir(app)}/$fileName.zip")
+        val title = uri.pathSegments[uri.pathSegments.size - 3]
 
         val request = Request(uri).apply {
-            setDestinationUri(Uri.fromFile(file))
-            setTitle(fileName)
-            setDescription(app.getString(R.string.app_description).replace("file", fileName))
+            setTitle(title)
+            setDescription(app.getString(R.string.app_description).replace("files", title))
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 setRequiresCharging(false)
             }
@@ -147,10 +144,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         app.registerReceiver(receiver, IntentFilter(ACTION_DOWNLOAD_COMPLETE))
         val downloadManager = ContextCompat.getSystemService(app, DownloadManager::class.java)
         downloadID = downloadManager?.enqueue(request) ?: -1
-    }
-
-    private fun getDownloadDir(app: Application) = app.run {
-        getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)?.path ?: filesDir.path
     }
 
     private val _showInfo = MutableLiveData<Boolean>()
