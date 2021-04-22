@@ -10,32 +10,24 @@
             type="com.udacity.loadapp.Download" />
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.constraintlayout.motion.widget.MotionLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:layoutDescription="@xml/content_detail_scene"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:context="com.udacity.loadapp.DetailActivity"
-        tools:showIn="@layout/activity_detail"
-        tools:viewBindingIgnore="true">
+        tools:showIn="@layout/activity_detail">
 
         <TextView
             android:id="@+id/titleLabel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="32dp"
-            android:text="@string/title"
-            app:layout_constraintBaseline_toBaselineOf="@+id/titleText"
-            app:layout_constraintEnd_toEndOf="@+id/detailsLabel"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:text="@string/title" />
 
         <TextView
             android:id="@+id/titleText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="32dp"
             android:text="@{download.title}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/detailsText"
@@ -87,5 +79,5 @@
             app:layout_constraintStart_toStartOf="@+id/detailsText"
             app:layout_constraintTop_toBottomOf="@+id/detailsText" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.motion.widget.MotionLayout>
 </layout>
