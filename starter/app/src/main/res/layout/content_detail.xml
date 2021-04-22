@@ -7,14 +7,14 @@
 
         <variable
             name="download"
-            type="com.udacity.Download" />
+            type="com.udacity.loadapp.Download" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:context=".DetailActivity"
+        tools:context="com.udacity.loadapp.DetailActivity"
         tools:showIn="@layout/activity_detail"
         tools:viewBindingIgnore="true">
 

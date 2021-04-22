@@ -1,4 +1,4 @@
-package com.udacity
+package com.udacity.loadapp
 
 import android.app.*
 import android.app.DownloadManager.*

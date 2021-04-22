@@ -1,4 +1,4 @@
-package com.udacity
+package com.udacity.loadapp
 
 import android.animation.ValueAnimator
 import android.animation.ValueAnimator.INFINITE

@@ -1,10 +1,10 @@
-package com.udacity
+package com.udacity.loadapp
 
 import android.app.NotificationManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.udacity.databinding.ActivityDetailBinding
+import com.udacity.loadapp.databinding.ActivityDetailBinding
 
 class DetailActivity : AppCompatActivity() {
 
