@@ -54,7 +54,7 @@
         app:autoTransition="animateToEnd"
         app:constraintSetEnd="@id/end"
         app:constraintSetStart="@+id/start"
-        app:duration="750">
+        app:duration="@integer/animation_duration">
         <KeyFrameSet>
             <KeyPosition
                 app:framePosition="80"
@@ -66,6 +66,16 @@
                 app:keyPositionType="parentRelative"
                 app:motionTarget="@id/titleText"
                 app:percentY="0.1" />
+            <KeyPosition
+                app:framePosition="80"
+                app:keyPositionType="parentRelative"
+                app:motionTarget="@id/detailsLabel"
+                app:percentY="0.3" />
+            <KeyPosition
+                app:framePosition="80"
+                app:keyPositionType="parentRelative"
+                app:motionTarget="@id/detailsText"
+                app:percentY="0.3" />
         </KeyFrameSet>
     </Transition>
 </MotionScene>
