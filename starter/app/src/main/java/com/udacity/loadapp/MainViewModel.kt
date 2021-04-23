@@ -30,13 +30,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             context?.let {
-                val downloadManager = it.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-                intent?.getDownload(downloadManager).let { download ->
-                    val notificationIntent = Intent(context, DetailActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        putExtra("download", download)
+                ContextCompat.getSystemService(it, DownloadManager::class.java)?.let { downloadManager ->
+                    intent?.getDownload(downloadManager).let { download ->
+                        val notificationIntent = Intent(context, DetailActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            putExtra(Download.EXTRA_NAME, download)
+                        }
+                        LoadAppNotification.notify(it, notificationIntent)
                     }
-                    LoadAppNotification.notify(it, notificationIntent)
                 }
                 it.unregisterReceiver(this)
             }
@@ -73,24 +74,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private var downloadOptionId = -1
-    private lateinit var uri: Uri
-
     fun RadioGroup.setDownloadOptionId(id: Int) {
         if (downloadOptionId != id) {
             _downloadButtonState.value = ButtonState.Active
             downloadOptionId = id
-            uri = Uri.parse(
-                when (id) {
-                    R.id.glide_radio -> "https://github.com/bumptech/glide/archive/master.zip"
-                    R.id.loadapp_radio -> "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
-                    R.id.retrofit_radio -> "https://github.com/square/retrofit/archive/master.zip"
-                    else -> ""
-                }
-            )
         }
     }
 
     private var downloadID: Long = 0
+    private val uri
+        get() = Uri.parse(
+            when (downloadOptionId) {
+                R.id.glide_radio -> "https://github.com/bumptech/glide/archive/master.zip"
+                R.id.loadapp_radio -> "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
+                R.id.retrofit_radio -> "https://github.com/square/retrofit/archive/master.zip"
+                else -> ""
+            }
+        )
 
     private fun download() {
         _downloadButtonState.value = ButtonState.Loading
