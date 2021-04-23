@@ -20,9 +20,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         LoadAppNotificationChannel.create(application)
     }
 
-    private val _downloadButtonState = MutableLiveData<ButtonState>().apply {
-        value = ButtonState.Inactive
-    }
+    private val _downloadButtonState = MutableLiveData<ButtonState>(ButtonState.Inactive)
     val downloadButtonState: LiveData<ButtonState>
         get() = _downloadButtonState
 
