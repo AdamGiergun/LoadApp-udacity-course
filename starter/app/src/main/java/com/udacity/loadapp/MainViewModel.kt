@@ -23,42 +23,52 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _downloadButtonState = MutableLiveData<ButtonState>(ButtonState.Inactive)
     val downloadButtonState: LiveData<ButtonState>
         get() = _downloadButtonState
+    private fun completeDownload() {
+        _downloadButtonState.value = ButtonState.Completed
+    }
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            context?.run {
-                var downloadStatus = STATUS_PENDING
-                var downloadTitle = ""
-                intent?.getLongExtra(EXTRA_DOWNLOAD_ID, -1)?.let { id ->
-                    if (id == downloadID) _downloadButtonState.value = ButtonState.Completed
+            context?.let {
+                val downloadManager = it.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                intent?.getDownload(downloadManager).let { download ->
+                    val notificationIntent = Intent(context, DetailActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        putExtra("download", download)
+                    }
+                    LoadAppNotification.notify(it, notificationIntent)
+                }
+                it.unregisterReceiver(this)
+            }
+        }
 
-                    val downloadManager =
-                        getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-                    val query = Query().setFilterById(id)
-                    downloadManager.query(query).use { cursor ->
-                        if (cursor.moveToFirst()) {
-                            var index = cursor.getColumnIndex(COLUMN_STATUS)
-                            downloadStatus = cursor.getInt(index)
-                            index = cursor.getColumnIndex(COLUMN_TITLE)
-                            downloadTitle = cursor.getString(index)
-                        }
+        private fun Intent.getDownload(downloadManager: DownloadManager): Download {
+            var downloadStatus = STATUS_PENDING
+            var downloadTitle = ""
+
+            getLongExtra(EXTRA_DOWNLOAD_ID, -1).let { id ->
+                if (id == downloadID) completeDownload()
+
+                val query = Query().setFilterById(id)
+                downloadManager.query(query).use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        var columnIndex = cursor.getColumnIndex(COLUMN_STATUS)
+                        downloadStatus = cursor.getInt(columnIndex)
+
+                        columnIndex = cursor.getColumnIndex(COLUMN_TITLE)
+                        downloadTitle = cursor.getString(columnIndex)
                     }
                 }
-
-                val downloadDetails = when {
-                    downloadTitle.contains("glide") -> R.string.glide_library
-                    downloadTitle.contains("nd940") -> R.string.loadapp_repository
-                    downloadTitle.contains("retrofit") -> R.string.retrofit_client
-                    else -> R.string.unknown
-                }
-                val download = Download(downloadTitle, downloadDetails, downloadStatus)
-                val notificationIntent = Intent(context, DetailActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    putExtra("download", download)
-                }
-                LoadAppNotification.notify(this, notificationIntent)
             }
-            context?.unregisterReceiver(this)
+
+            val downloadDetails = when {
+                downloadTitle.contains("glide") -> R.string.glide_library
+                downloadTitle.contains("nd940") -> R.string.loadapp_repository
+                downloadTitle.contains("retrofit") -> R.string.retrofit_client
+                else -> R.string.unknown
+            }
+
+            return Download(downloadTitle, downloadDetails, downloadStatus)
         }
     }
 
