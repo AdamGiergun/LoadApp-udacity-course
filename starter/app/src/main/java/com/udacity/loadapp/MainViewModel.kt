@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.widget.RadioGroup
@@ -24,21 +23,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private var notificationId = abs(Random.nextInt())
 
     init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel(
-                CHANNEL_ID,
-                CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).run {
-                enableLights(true)
-                lightColor = Color.GREEN
-                enableVibration(true)
-                description = application.getString(R.string.channel_for_load_app)
-                val notificationManager =
-                    application.getSystemService(NotificationManager::class.java)
-                notificationManager.createNotificationChannel(this)
-            }
-        }
+        LoadAppNotificationChannel.create(application)
     }
 
     private val _downloadButtonState = MutableLiveData<ButtonState>().apply {
@@ -83,7 +68,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val pendingIntent =
                     PendingIntent.getActivity(this, notificationId, notificationIntent, 0)
 
-                NotificationCompat.Builder(this, CHANNEL_ID).apply {
+                NotificationCompat.Builder(this, LoadAppNotificationChannel.CHANNEL_ID).apply {
                     setSmallIcon(R.drawable.ic_assistant_black_24dp)
                     setContentTitle(getString(R.string.notification_title))
                     setContentText(getString(R.string.notification_description))
@@ -169,10 +154,5 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun showInfo() {
         _showInfo.value = true
         _showInfo.value = false
-    }
-
-    companion object {
-        private const val CHANNEL_ID = "loadAppChannel"
-        private const val CHANNEL_NAME = "LoadApp"
     }
 }
