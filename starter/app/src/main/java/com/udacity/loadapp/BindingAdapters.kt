@@ -3,6 +3,8 @@ package com.udacity.loadapp
 import android.app.DownloadManager.*
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
+import com.udacity.loadapp.button.ButtonState
+import com.udacity.loadapp.button.LoadingButton
 
 @BindingAdapter("buttonState")
 fun LoadingButton.setButtonState(buttonState: ButtonState) {

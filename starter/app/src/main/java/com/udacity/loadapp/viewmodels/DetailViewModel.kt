@@ -1,4 +1,4 @@
-package com.udacity.loadapp
+package com.udacity.loadapp.viewmodels
 
 import android.app.Application
 import android.app.NotificationManager
@@ -7,6 +7,8 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.udacity.loadapp.Download
+import com.udacity.loadapp.notification.LoadAppNotification
 
 class DetailViewModel(application: Application, intent: Intent) : AndroidViewModel(application) {
 

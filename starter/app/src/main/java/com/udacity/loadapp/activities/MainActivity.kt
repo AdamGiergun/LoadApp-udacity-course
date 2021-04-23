@@ -1,9 +1,10 @@
-package com.udacity.loadapp
+package com.udacity.loadapp.activities
 
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.udacity.loadapp.viewmodels.MainViewModel
 import com.udacity.loadapp.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {

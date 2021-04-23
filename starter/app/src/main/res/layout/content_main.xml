@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="com.udacity.loadapp.MainViewModel" />
+            type="com.udacity.loadapp.viewmodels.MainViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -15,7 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:context="com.udacity.loadapp.MainActivity"
+        tools:context="com.udacity.loadapp.activities.MainActivity"
         tools:showIn="@layout/activity_main">
 
         <ImageView
@@ -54,7 +54,7 @@
                 android:text="@string/retrofit_client" />
         </RadioGroup>
 
-        <com.udacity.loadapp.LoadingButton
+        <com.udacity.loadapp.button.LoadingButton
             android:id="@+id/download_button"
             style="@style/DownloadButton"
             android:onClick="@{() -> viewModel.downloadButtonClicked()}"

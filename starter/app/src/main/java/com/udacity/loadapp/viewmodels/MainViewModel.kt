@@ -1,4 +1,4 @@
-package com.udacity.loadapp
+package com.udacity.loadapp.viewmodels
 
 import android.app.*
 import android.app.DownloadManager.*
@@ -13,6 +13,11 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.udacity.loadapp.*
+import com.udacity.loadapp.activities.DetailActivity
+import com.udacity.loadapp.button.ButtonState
+import com.udacity.loadapp.notification.LoadAppNotification
+import com.udacity.loadapp.notification.LoadAppNotificationChannel
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 

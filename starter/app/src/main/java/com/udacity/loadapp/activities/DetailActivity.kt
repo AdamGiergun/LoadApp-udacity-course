@@ -1,8 +1,11 @@
-package com.udacity.loadapp
+package com.udacity.loadapp.activities
 
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.udacity.loadapp.viewmodels.DetailViewModel
+import com.udacity.loadapp.viewmodels.DetailViewModelFactory
+import com.udacity.loadapp.R
 import com.udacity.loadapp.databinding.ActivityDetailBinding
 
 class DetailActivity : AppCompatActivity() {

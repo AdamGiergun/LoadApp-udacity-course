@@ -1,4 +1,4 @@
-package com.udacity.loadapp
+package com.udacity.loadapp.button
 
 import android.animation.ValueAnimator
 import android.animation.ValueAnimator.INFINITE
@@ -10,6 +10,7 @@ import android.util.TypedValue
 import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
+import com.udacity.loadapp.R
 import kotlin.properties.Delegates
 
 private const val SPACE = 50f
@@ -137,8 +138,6 @@ class LoadingButton @JvmOverloads constructor(
             ButtonState.Active -> refreshButtonAsActive()
             ButtonState.Loading -> refreshButtonAsLoading()
             ButtonState.Completed -> refreshButtonAsCompleted()
-            else -> {
-            }
         }
     }
 

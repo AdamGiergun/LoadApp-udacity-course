@@ -1,10 +1,11 @@
-package com.udacity.loadapp
+package com.udacity.loadapp.notification
 
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.graphics.Color
 import android.os.Build
+import com.udacity.loadapp.R
 
 object LoadAppNotificationChannel {
 
