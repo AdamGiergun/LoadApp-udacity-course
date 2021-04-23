@@ -94,23 +94,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun download() {
         _downloadButtonState.value = ButtonState.Loading
-        val app = getApplication<Application>()
+        getApplication<Application>().run {
 
-        val title = uri.pathSegments[uri.pathSegments.size - 3]
+            val title = uri.pathSegments[uri.pathSegments.size - 3]
+            val desc = getString(R.string.app_description).replace("files", title)
 
-        val request = Request(uri).apply {
-            setTitle(title)
-            setDescription(app.getString(R.string.app_description).replace("files", title))
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                setRequiresCharging(false)
+            val request = Request(uri).apply {
+                setTitle(title)
+                setDescription(desc)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    setRequiresCharging(false)
+                }
+                setAllowedOverMetered(true)
+                setAllowedOverRoaming(true)
             }
-            setAllowedOverMetered(true)
-            setAllowedOverRoaming(true)
-        }
 
-        app.registerReceiver(receiver, IntentFilter(ACTION_DOWNLOAD_COMPLETE))
-        val downloadManager = ContextCompat.getSystemService(app, DownloadManager::class.java)
-        downloadID = downloadManager?.enqueue(request) ?: -1
+            registerReceiver(receiver, IntentFilter(ACTION_DOWNLOAD_COMPLETE))
+            val downloadManager = ContextCompat.getSystemService(this, DownloadManager::class.java)
+            downloadID = downloadManager?.enqueue(request) ?: -1
+        }
     }
 
     private val _showInfo = MutableLiveData<Boolean>()
