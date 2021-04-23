@@ -14,11 +14,11 @@ class DetailActivity : AppCompatActivity() {
             setContentView(root)
             toolbar.title = getString(R.string.download_details)
             setSupportActionBar(toolbar)
-            val download: Download? = intent.getParcelableExtra("download")
+            val download: Download? = intent.getParcelableExtra(Download.EXTRA_NAME)
             download?.let { contentDetail.download = it }
         }
 
-        val notificationId = intent.getIntExtra("notification_id", 0)
+        val notificationId = intent.getIntExtra(LoadAppNotification.EXTRA_ID, 0)
         val notificationManager = ContextCompat.getSystemService(
                 this,
                 NotificationManager::class.java

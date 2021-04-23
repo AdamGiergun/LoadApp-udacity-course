@@ -9,6 +9,8 @@ import kotlin.math.abs
 import kotlin.random.Random
 
 object LoadAppNotification {
+    const val EXTRA_ID = "notification_id"
+
     private var notificationId = getInitial()
 
     private fun getInitial(): Int {
@@ -16,7 +18,7 @@ object LoadAppNotification {
     }
 
     fun notify(context: Context, intent: Intent) {
-        intent.putExtra("notification_id", notificationId)
+        intent.putExtra(EXTRA_ID, notificationId)
         val pendingIntent = PendingIntent.getActivity(context, notificationId, intent, 0)
 
         NotificationCompat.Builder(context, LoadAppNotificationChannel.CHANNEL_ID).apply {
