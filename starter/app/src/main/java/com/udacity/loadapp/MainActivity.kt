@@ -8,14 +8,12 @@ import com.udacity.loadapp.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    private val mainViewModel: MainViewModel by viewModels()
-
-    private lateinit var binding: ActivityMainBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val mainViewModel: MainViewModel by viewModels()
+
         ActivityMainBinding.inflate(layoutInflater).run {
-            binding = this
             lifecycleOwner = this@MainActivity
             setContentView(root)
             setSupportActionBar(toolbar)
