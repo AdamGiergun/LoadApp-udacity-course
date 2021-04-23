@@ -9,18 +9,12 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.widget.RadioGroup
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import kotlin.math.abs
-import kotlin.random.Random
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
-
-    private var notificationId = abs(Random.nextInt())
 
     init {
         LoadAppNotificationChannel.create(application)
@@ -59,32 +53,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     downloadTitle.contains("retrofit") -> R.string.retrofit_client
                     else -> R.string.unknown
                 }
-                val notificationIntent = Intent(this, DetailActivity::class.java).apply {
+                val download = Download(downloadTitle, downloadDetails, downloadStatus)
+                val notificationIntent = Intent(context, DetailActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    val download = Download(downloadTitle, downloadDetails, downloadStatus)
                     putExtra("download", download)
-                    putExtra("notification_id", notificationId)
                 }
-                val pendingIntent =
-                    PendingIntent.getActivity(this, notificationId, notificationIntent, 0)
-
-                NotificationCompat.Builder(this, LoadAppNotificationChannel.CHANNEL_ID).apply {
-                    setSmallIcon(R.drawable.ic_assistant_black_24dp)
-                    setContentTitle(getString(R.string.notification_title))
-                    setContentText(getString(R.string.notification_description))
-                    priority = NotificationCompat.PRIORITY_DEFAULT
-                    setAutoCancel(true)
-                    addAction(
-                        R.drawable.ic_assistant_black_24dp,
-                        getString(R.string.details_cap),
-                        pendingIntent
-                    )
-
-                    with(NotificationManagerCompat.from(this@run)) {
-                        notify(notificationId, build())
-                    }
-                    notificationId++
-                }
+                LoadAppNotification.notify(this, notificationIntent)
             }
             context?.unregisterReceiver(this)
         }
