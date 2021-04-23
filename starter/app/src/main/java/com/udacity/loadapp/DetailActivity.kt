@@ -1,8 +1,8 @@
 package com.udacity.loadapp
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import com.udacity.loadapp.databinding.ActivityDetailBinding
 
 class DetailActivity : AppCompatActivity() {
@@ -13,8 +13,8 @@ class DetailActivity : AppCompatActivity() {
             setContentView(root)
             toolbar.title = getString(R.string.download_details)
             setSupportActionBar(toolbar)
-            val viewModel = ViewModelProvider(this@DetailActivity, DetailViewModelFactory(application, intent)).get(DetailViewModel::class.java)
-            viewModel.download?.let { contentDetail.download = it }
+            val detailViewModel by viewModels<DetailViewModel> { DetailViewModelFactory(application, intent)  }
+            detailViewModel.download?.let { contentDetail.download = it }
         }
     }
 }
