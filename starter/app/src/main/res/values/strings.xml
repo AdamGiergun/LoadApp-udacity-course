@@ -35,4 +35,5 @@
     <string name="location">Location</string>
     <string name="title">Title</string>
     <string name="download_details">LoadApp download details</string>
+    <string name="return_string">Return</string>
 </resources>
