@@ -80,6 +80,7 @@
             android:id="@+id/returnButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:onClick="onReturnClick"
             android:text="@string/return_string" />
 
     </androidx.constraintlayout.motion.widget.MotionLayout>
