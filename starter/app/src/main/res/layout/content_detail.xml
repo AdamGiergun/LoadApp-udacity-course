@@ -83,5 +83,12 @@
             android:onClick="onReturnClick"
             android:text="@string/return_string" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/openButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onOpenClick"
+            android:text="@string/open" />
+
     </androidx.constraintlayout.motion.widget.MotionLayout>
 </layout>

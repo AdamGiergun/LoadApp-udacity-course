@@ -36,4 +36,8 @@
     <string name="title">Title</string>
     <string name="download_details">LoadApp download details</string>
     <string name="return_string">Return</string>
+    <string name="open">Open</string>
+    <string name="choose_an_app_to_open_with">Choose an app to open with</string>
+    <string name="error_opening_file">Error opening file</string>
+    <string name="zip_mime_type">application/zip</string>
 </resources>

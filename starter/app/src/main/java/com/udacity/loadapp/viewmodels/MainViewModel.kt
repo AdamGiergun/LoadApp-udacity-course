@@ -28,6 +28,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _downloadButtonState = MutableLiveData<ButtonState>(ButtonState.Inactive)
     val downloadButtonState: LiveData<ButtonState>
         get() = _downloadButtonState
+
     private fun completeDownload() {
         _downloadButtonState.value = ButtonState.Completed
     }
@@ -35,15 +36,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             context?.let {
-                ContextCompat.getSystemService(it, DownloadManager::class.java)?.let { downloadManager ->
-                    intent?.getDownload(downloadManager).let { download ->
-                        val notificationIntent = Intent(it, DetailActivity::class.java).apply {
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            putExtra(Download.EXTRA_NAME, download)
+                ContextCompat.getSystemService(it, DownloadManager::class.java)
+                    ?.let { downloadManager ->
+                        intent?.getDownload(downloadManager).let { download ->
+                            val notificationIntent = Intent(it, DetailActivity::class.java).apply {
+                                flags =
+                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                putExtra(Download.EXTRA_NAME, download)
+                            }
+                            LoadAppNotification.notify(it, notificationIntent)
                         }
-                        LoadAppNotification.notify(it, notificationIntent)
                     }
-                }
                 it.unregisterReceiver(this)
             }
         }
@@ -51,6 +54,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         private fun Intent.getDownload(downloadManager: DownloadManager): Download {
             var downloadStatus = STATUS_PENDING
             var downloadTitle = ""
+            var downloadLocalUriString = ""
 
             getLongExtra(EXTRA_DOWNLOAD_ID, -1).let { id ->
                 if (id == downloadID) completeDownload()
@@ -63,6 +67,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                         columnIndex = cursor.getColumnIndex(COLUMN_TITLE)
                         downloadTitle = cursor.getString(columnIndex)
+
+                        columnIndex = cursor.getColumnIndex(COLUMN_LOCAL_URI)
+                        downloadLocalUriString = cursor.getString(columnIndex)
                     }
                 }
             }
@@ -74,7 +81,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 else -> R.string.unknown
             }
 
-            return Download(downloadTitle, downloadDetails, downloadStatus)
+            return Download(downloadTitle, downloadDetails, downloadStatus, downloadLocalUriString)
         }
     }
 

@@ -3,6 +3,7 @@ package com.udacity.loadapp.viewmodels
 import android.app.Application
 import android.app.NotificationManager
 import android.content.Intent
+import android.net.Uri
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
@@ -13,6 +14,8 @@ import com.udacity.loadapp.notification.LoadAppNotification
 class DetailViewModel(application: Application, intent: Intent) : AndroidViewModel(application) {
 
     var download: Download? = intent.getParcelableExtra(Download.EXTRA_NAME)
+
+    val downloadLocalUri: Uri? = download?.let { Uri.parse(it.localUriString) }
 
     init {
         val notificationId = intent.getIntExtra(LoadAppNotification.EXTRA_ID, 0)
