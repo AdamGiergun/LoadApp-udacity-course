@@ -20,7 +20,7 @@ object LoadAppNotification {
 
     fun notify(context: Context, intent: Intent) {
         intent.putExtra(EXTRA_ID, notificationId)
-        val pendingIntent = PendingIntent.getActivity(context, notificationId, intent, 0)
+        val pendingIntent = PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_IMMUTABLE)
 
         NotificationCompat.Builder(context, LoadAppNotificationChannel.CHANNEL_ID).apply {
             setSmallIcon(R.drawable.ic_assistant_black_24dp)
