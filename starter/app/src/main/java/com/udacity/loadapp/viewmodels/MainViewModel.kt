@@ -37,7 +37,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             context?.let {
                 ContextCompat.getSystemService(it, DownloadManager::class.java)?.let { downloadManager ->
                     intent?.getDownload(downloadManager).let { download ->
-                        val notificationIntent = Intent(context, DetailActivity::class.java).apply {
+                        val notificationIntent = Intent(it, DetailActivity::class.java).apply {
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             putExtra(Download.EXTRA_NAME, download)
                         }
