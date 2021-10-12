@@ -1,6 +1,8 @@
 package com.udacity.loadapp
 
 import android.app.DownloadManager.*
+import android.view.View
+import android.widget.EditText
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.udacity.loadapp.button.ButtonState
@@ -23,4 +25,15 @@ fun TextView.setDownloadStateText(downloadStatus: Int) {
             else -> R.string.unknown
         }
     )
+}
+
+@BindingAdapter("isCustomUrlSelected")
+fun EditText.setState(isCustomUrlSelected: Boolean) {
+    if (isCustomUrlSelected) {
+        visibility = View.VISIBLE
+        isEnabled = true
+    } else {
+        visibility = View.INVISIBLE
+        isEnabled = false
+    }
 }

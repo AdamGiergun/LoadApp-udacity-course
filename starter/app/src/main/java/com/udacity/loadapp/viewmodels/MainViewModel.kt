@@ -85,21 +85,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private var _isCustomUrlSelected = MutableLiveData<Boolean>()
+    val isCustomUrlSelected: LiveData<Boolean>
+        get() = _isCustomUrlSelected
+
     private var downloadOptionId = -1
     fun RadioGroup.setDownloadOptionId(id: Int) {
         if (downloadOptionId != id) {
             _downloadButtonState.value = ButtonState.Active
             downloadOptionId = id
+            _isCustomUrlSelected.value = (downloadOptionId == R.id.custom_url_radio)
         }
     }
 
     private var downloadID: Long = 0
+    private var customUrl: String = ""
     private val uri
         get() = Uri.parse(
             when (downloadOptionId) {
                 R.id.glide_radio -> "https://github.com/bumptech/glide/archive/master.zip"
                 R.id.loadapp_radio -> "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
                 R.id.retrofit_radio -> "https://github.com/square/retrofit/archive/master.zip"
+                R.id.custom_url_radio -> customUrl
                 else -> ""
             }
         )
@@ -137,10 +144,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         else
             R.string.please_choose_another_download
 
-    fun downloadButtonClicked() {
+    fun downloadButtonClicked(newCustomUrl: String) {
         when (downloadButtonState.value) {
             ButtonState.Inactive -> showInfo()
-            ButtonState.Active -> download()
+            ButtonState.Active -> {
+                customUrl = newCustomUrl
+                download()
+            }
             ButtonState.Completed -> showInfo()
             else -> {
             }
