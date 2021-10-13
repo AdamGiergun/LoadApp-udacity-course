@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.widget.RadioGroup
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -112,33 +113,47 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         )
 
     private fun download() {
-        _downloadButtonState.value = ButtonState.Loading
         getApplication<Application>().run {
+            val title: String
+            val replacementString: String
 
-            val title = if (downloadOptionId == R.id.custom_url_radio)
-                customUrl
-            else
-                uri.pathSegments[uri.pathSegments.size - 3]
-            val desc = getString(R.string.app_description).replace("files",
-                if (downloadOptionId == R.id.custom_url_radio)
-                    getString(R.string.custom_download)
-                else
-                    title)
-
-            val request = Request(uri).apply {
-                setTitle(title)
-                setDescription(desc)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    setRequiresCharging(false)
+            if (downloadOptionId == R.id.custom_url_radio) {
+                if (uri.toString().startsWith("http://", true) || (uri.toString()
+                        .startsWith("https://", true))
+                ) {
+                    title = customUrl
+                    replacementString = getString(R.string.custom_download)
+                    startDownload(this, title, replacementString)
+                } else {
+                    Toast.makeText(this, "Start with http(s)://", Toast.LENGTH_SHORT).show()
                 }
-                setAllowedOverMetered(true)
-                setAllowedOverRoaming(true)
+            } else {
+                title = uri.pathSegments[uri.pathSegments.size - 3]
+                replacementString = title
+                startDownload(this, title, replacementString)
             }
-
-            registerReceiver(receiver, IntentFilter(ACTION_DOWNLOAD_COMPLETE))
-            val downloadManager = ContextCompat.getSystemService(this, DownloadManager::class.java)
-            downloadID = downloadManager?.enqueue(request) ?: -1
         }
+    }
+
+    private fun startDownload(app: Application, title: String, replacementString: String) {
+        _downloadButtonState.value = ButtonState.Loading
+
+        val desc = app.getString(R.string.app_description).replace("files", replacementString)
+
+        val request = Request(uri).apply {
+            setTitle(title)
+            setDescription(desc)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                setRequiresCharging(false)
+            }
+            setAllowedOverMetered(true)
+            setAllowedOverRoaming(true)
+        }
+
+        app.registerReceiver(receiver, IntentFilter(ACTION_DOWNLOAD_COMPLETE))
+        val downloadManager =
+            ContextCompat.getSystemService(app, DownloadManager::class.java)
+        downloadID = downloadManager?.enqueue(request) ?: -1
     }
 
     private val _showInfo = MutableLiveData<Boolean>()
