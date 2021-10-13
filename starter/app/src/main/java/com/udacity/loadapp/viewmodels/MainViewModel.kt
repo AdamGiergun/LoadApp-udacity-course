@@ -78,7 +78,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 downloadTitle.contains("glide") -> R.string.glide_library
                 downloadTitle.contains("nd940") -> R.string.loadapp_repository
                 downloadTitle.contains("retrofit") -> R.string.retrofit_client
-                else -> R.string.unknown
+                else -> R.string.custom_download
             }
 
             return Download(downloadTitle, downloadDetails, downloadStatus, downloadLocalUriString)
@@ -115,8 +115,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _downloadButtonState.value = ButtonState.Loading
         getApplication<Application>().run {
 
-            val title = uri.pathSegments[uri.pathSegments.size - 3]
-            val desc = getString(R.string.app_description).replace("files", title)
+            val title = if (downloadOptionId == R.id.custom_url_radio)
+                customUrl
+            else
+                uri.pathSegments[uri.pathSegments.size - 3]
+            val desc = getString(R.string.app_description).replace("files",
+                if (downloadOptionId == R.id.custom_url_radio)
+                    getString(R.string.custom_download)
+                else
+                    title)
 
             val request = Request(uri).apply {
                 setTitle(title)

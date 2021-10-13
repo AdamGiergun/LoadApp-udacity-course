@@ -42,4 +42,5 @@
     <string name="zip_mime_type">application/zip</string>
     <string name="provide_your_own_download_below">Provide your own download below:</string>
     <string name="your_url">your URL</string>
+    <string name="custom_download">Custom download</string>
 </resources>
