@@ -1,14 +1,13 @@
 package com.udacity.loadapp.activities
 
+import android.app.DownloadManager
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.documentfile.provider.DocumentFile
 import com.udacity.loadapp.viewmodels.DetailViewModel
 import com.udacity.loadapp.viewmodels.DetailViewModelFactory
 import com.udacity.loadapp.R
@@ -43,30 +42,31 @@ class DetailActivity : AppCompatActivity() {
     }
 
     fun onOpenClick(view: View) {
-        detailViewModel.downloadLocalUri?.let { localUri ->
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                val mimeTypeForUri = getMimeTypeForUri(localUri)
-                setDataAndType(localUri, mimeTypeForUri)
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
-                    addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                } else {
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-            }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             try {
-                startActivity(
-                    Intent.createChooser(
-                        intent,
-                        getString(R.string.choose_an_app_to_open_with)
-                    )
-                )
+                startActivity(Intent(DownloadManager.ACTION_VIEW_DOWNLOADS))
             } catch (e: Exception) {
                 Toast.makeText(this, getString(R.string.error_opening_file), Toast.LENGTH_LONG)
                     .show()
             }
+        } else {
+            detailViewModel.downloadLocalUri?.let { localUri ->
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    setDataAndType(localUri, detailViewModel.downloadMimeType?.let { getString(it) })
+                }
+                try {
+                    startActivity(
+                        Intent.createChooser(
+                            intent,
+                            getString(R.string.choose_an_app_to_open_with)
+                        )
+                    )
+                } catch (e: Exception) {
+                    Toast.makeText(this, getString(R.string.error_opening_file), Toast.LENGTH_LONG)
+                        .show()
+                }
+            }
         }
     }
-
-    private fun getMimeTypeForUri(localUri: Uri): String =
-        DocumentFile.fromSingleUri(this, localUri)?.type ?: getString(R.string.zip_mime_type)
 }
