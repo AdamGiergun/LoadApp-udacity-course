@@ -32,8 +32,8 @@
         <RadioGroup
             android:id="@+id/download_chooser"
             style="@style/DownloadRadioGroup"
+            android:layout_height="wrap_content"
             android:onCheckedChanged="@{viewModel::setDownloadOptionId}"
-            app:layout_constraintBottom_toTopOf="@id/custom_url"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/download_img"
             app:layout_constraintTop_toTopOf="parent">
@@ -63,17 +63,28 @@
             android:id="@+id/custom_url"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/narrow_margin"
+            android:layout_marginEnd="@dimen/narrow_margin"
             android:enabled="false"
             android:hint="@string/your_url"
             android:importantForAutofill="no"
             android:inputType="textUri"
+            android:textSize="14sp"
             android:visibility="invisible"
             app:isCustomUrlSelected="@{viewModel.isCustomUrlSelected}"
-            app:layout_constraintBottom_toTopOf="@id/download_button"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/download_img"
-            app:layout_constraintTop_toBottomOf="@id/download_chooser"
-            app:layout_constraintVertical_bias="0" />
+            app:layout_constraintTop_toBottomOf="@id/download_chooser" />
+
+        <View
+            android:id="@+id/hidden_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toTopOf="@+id/download_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/download_img"
+            app:layout_constraintTop_toBottomOf="@id/custom_url" />
 
         <com.udacity.loadapp.button.LoadingButton
             android:id="@+id/download_button"

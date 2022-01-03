@@ -64,17 +64,29 @@
             android:id="@+id/custom_url"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/narrow_margin"
+            android:layout_marginEnd="@dimen/narrow_margin"
             android:enabled="false"
             android:hint="@string/your_url"
             android:importantForAutofill="no"
             android:inputType="textUri"
+            android:textSize="14sp"
             android:visibility="invisible"
             app:isCustomUrlSelected="@{viewModel.isCustomUrlSelected}"
-            app:layout_constraintBottom_toTopOf="@id/download_button"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/download_chooser"
-            app:layout_constraintVertical_bias="0" />
+            app:layout_constraintTop_toBottomOf="@id/download_chooser" />
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toTopOf="@+id/download_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/custom_url"
+            tools:layout_editor_absoluteX="0dp" />
 
         <com.udacity.loadapp.button.LoadingButton
             android:id="@+id/download_button"
