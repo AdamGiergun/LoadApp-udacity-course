@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
-import android.os.Build
 import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -143,9 +142,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val request = Request(uri).apply {
             setTitle(title)
             setDescription(desc)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                setRequiresCharging(false)
-            }
+            setRequiresCharging(false)
             setAllowedOverMetered(true)
             setAllowedOverRoaming(true)
         }
