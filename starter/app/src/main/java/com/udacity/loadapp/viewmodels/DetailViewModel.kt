@@ -1,9 +1,11 @@
 package com.udacity.loadapp.viewmodels
 
 import android.app.Application
+import android.app.DownloadManager
 import android.app.NotificationManager
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
@@ -12,14 +14,27 @@ import com.udacity.loadapp.Download
 import com.udacity.loadapp.R
 import com.udacity.loadapp.notification.LoadAppNotification
 
-class DetailViewModel(application: Application, intent: Intent) : AndroidViewModel(application) {
+class DetailViewModel(application: Application, sourceIntent: Intent) : AndroidViewModel(application) {
 
-    val download: Download? = intent.getParcelableExtra(Download.EXTRA_NAME)
-    val downloadLocalUri: Uri? = download?.let { Uri.parse(it.localUriString) }
-    val downloadMimeType: Int? = download?.let { if (it.details ==  R.string.custom_download) R.string.any_mime_type else R.string.zip_mime_type }
+    val download: Download? = sourceIntent.getParcelableExtra(Download.EXTRA_NAME)
+    private val downloadLocalUri: Uri? = download?.let { Uri.parse(it.localUriString) }
+    private val downloadMimeType: Int? =
+        download?.let { if (it.details == R.string.custom_download) R.string.any_mime_type else R.string.zip_mime_type }
+
+    val intent: Intent = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+        Intent(DownloadManager.ACTION_VIEW_DOWNLOADS)
+    } else {
+        Intent(Intent.ACTION_VIEW).run {
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            setDataAndType(downloadLocalUri, downloadMimeType?.let { application.getString(it) })
+            Intent.createChooser(
+                this, application.getString(R.string.choose_an_app_to_open_with)
+            )
+        }
+    }
 
     init {
-        val notificationId = intent.getIntExtra(LoadAppNotification.EXTRA_ID, 0)
+        val notificationId = sourceIntent.getIntExtra(LoadAppNotification.EXTRA_ID, 0)
         if (notificationId > 0) {
             (ContextCompat.getSystemService(
                 application,

@@ -1,8 +1,6 @@
 package com.udacity.loadapp.activities
 
-import android.app.DownloadManager
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -42,31 +40,11 @@ class DetailActivity : AppCompatActivity() {
     }
 
     fun onOpenClick(view: View) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            try {
-                startActivity(Intent(DownloadManager.ACTION_VIEW_DOWNLOADS))
-            } catch (e: Exception) {
-                Toast.makeText(this, getString(R.string.error_opening_file), Toast.LENGTH_LONG)
-                    .show()
-            }
-        } else {
-            detailViewModel.downloadLocalUri?.let { localUri ->
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    setDataAndType(localUri, detailViewModel.downloadMimeType?.let { getString(it) })
-                }
-                try {
-                    startActivity(
-                        Intent.createChooser(
-                            intent,
-                            getString(R.string.choose_an_app_to_open_with)
-                        )
-                    )
-                } catch (e: Exception) {
-                    Toast.makeText(this, getString(R.string.error_opening_file), Toast.LENGTH_LONG)
-                        .show()
-                }
-            }
+        try {
+            startActivity(detailViewModel.intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, getString(R.string.error_opening_file), Toast.LENGTH_LONG)
+                .show()
         }
     }
 }
