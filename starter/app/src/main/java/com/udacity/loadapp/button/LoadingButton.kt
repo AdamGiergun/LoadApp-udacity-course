@@ -1,7 +1,8 @@
 package com.udacity.loadapp.button
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
-import android.animation.ValueAnimator.INFINITE
 import android.content.Context
 import android.graphics.*
 import android.os.Build
@@ -15,6 +16,7 @@ import kotlin.properties.Delegates
 
 private const val SPACE = 50f
 private const val DURATION = 2000L
+private const val DURATION_EXTENSION = 1000L
 private val changingLookStates =
     listOf(ButtonState.Active, ButtonState.Loading, ButtonState.Completed)
 
@@ -225,8 +227,15 @@ class LoadingButton @JvmOverloads constructor(
         ViewContent() {
         protected val animator: ValueAnimator = ValueAnimator().apply {
             duration = DURATION
-            repeatCount = INFINITE
             addUpdateListener(listener)
+            addListener(object: AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    animation?.let {
+                        duration += DURATION_EXTENSION
+                        start()
+                    }
+                }
+            })
         }
 
         fun isAnimator(valueAnimator: ValueAnimator) = valueAnimator == animator
