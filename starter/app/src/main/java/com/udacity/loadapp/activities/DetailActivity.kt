@@ -2,6 +2,7 @@ package com.udacity.loadapp.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.method.LinkMovementMethod
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -29,6 +30,7 @@ class DetailActivity : AppCompatActivity() {
             detailViewModel.download?.let {
                 contentDetail.download = it
             }
+            contentDetail.linkText?.movementMethod = LinkMovementMethod.getInstance()
         }
     }
 
