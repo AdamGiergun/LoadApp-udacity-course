@@ -1,23 +1,29 @@
 package com.udacity.loadapp.viewmodels
 
-import android.app.*
+import android.app.Application
+import android.app.DownloadManager
 import android.app.DownloadManager.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
+import android.util.Patterns
+import android.webkit.URLUtil
 import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.udacity.loadapp.*
+import com.udacity.loadapp.Download
+import com.udacity.loadapp.R
 import com.udacity.loadapp.activities.DetailActivity
 import com.udacity.loadapp.button.ButtonState
 import com.udacity.loadapp.notification.LoadAppNotification
 import com.udacity.loadapp.notification.LoadAppNotificationChannel
+import java.net.MalformedURLException
+
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -106,10 +112,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 R.id.glide_radio -> "https://github.com/bumptech/glide/archive/master.zip"
                 R.id.loadapp_radio -> "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
                 R.id.retrofit_radio -> "https://github.com/square/retrofit/archive/master.zip"
-                R.id.custom_url_radio -> customUrl
+                R.id.custom_url_radio -> if (isValidUrl(customUrl)) customUrl else ""
                 else -> ""
             }
         )
+
+    private fun isValidUrl(urlString: String): Boolean {
+        try {
+            return URLUtil.isValidUrl(urlString) && Patterns.WEB_URL.matcher(urlString).matches()
+        } catch (ignored: MalformedURLException) {
+            Toast.makeText(getApplication(), "Malformed URL", Toast.LENGTH_LONG).show()
+        }
+        return false
+    }
 
     private fun download() {
         getApplication<Application>().run {
@@ -117,14 +132,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val replacementString: String
 
             if (downloadOptionId == R.id.custom_url_radio) {
-                if (uri.toString().startsWith("http://", true) || (uri.toString()
-                        .startsWith("https://", true))
-                ) {
+                if (isValidUrl(customUrl)) {
                     title = customUrl
                     replacementString = getString(R.string.custom_download)
                     startDownload(this, title, replacementString)
-                } else {
-                    Toast.makeText(this, "Start with http(s)://", Toast.LENGTH_SHORT).show()
+                }  else {
+                    Toast.makeText(this, "Invalid URL", Toast.LENGTH_LONG).show()
                 }
             } else {
                 title = uri.pathSegments[uri.pathSegments.size - 3]
